@@ -77,6 +77,7 @@ private:
 	bool hasNormalMap = false;
 
 	constantBufferMatrixes objMats;
+	matrixFunctions matrixFunction;
 	objMatrixes tempMatrixes = {};
 	Light lightMatrixes;
 

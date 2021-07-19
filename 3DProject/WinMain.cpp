@@ -192,6 +192,8 @@ int	CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 	DirectX::XMMATRIX WorldViewProjection = DirectX::XMMatrixIdentity();
 	DirectX::XMMATRIX World = DirectX::XMMatrixIdentity();
 
+	matrixFunctions matrixFunction;
+
 	//-----------------------------------------------------------------//
 	// Light attributes
 	//-----------------------------------------------------------------//
@@ -377,9 +379,17 @@ int	CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 
 			time += 1;
 
-			matrixes.setWorld(World);
-			matrixes.setWVP(WorldViewProjection);
-			matrixes.setTime(time);
+			
+
+			matrixes.World = matrixFunction.setWorld(World);
+			matrixes.WorldViewProjection = matrixFunction.setWVP(WorldViewProjection);
+			matrixes.time = time;
+
+			immediateContext->UpdateSubresource(pConstantBuffer, 0, NULL, &matrixes, 0, 0);
+
+			//matrixes.setWorld(World);
+			//matrixes.setWVP(WorldViewProjection);
+			//matrixes.setTime(time);
 
 			//-----------------------------------------------------------------//
 			// Geomatry pass and Light pass Update

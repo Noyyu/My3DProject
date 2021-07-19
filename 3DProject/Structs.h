@@ -107,43 +107,22 @@ struct constantBufferMatrixes
 	float time = 0;
 	int hasTexture = 1;
 	int hasNormal  = 1;
+};
 
-
-	void setWVP(DirectX::XMMATRIX WVP)
+struct matrixFunctions
+{
+	DirectX::XMFLOAT4X4 setWVP(DirectX::XMMATRIX WVP)
 	{
 		DirectX::XMFLOAT4X4 floatWVP;
 		DirectX::XMStoreFloat4x4(&floatWVP, XMMatrixTranspose(WVP));
-		WorldViewProjection = floatWVP;
+		return floatWVP;
 	}
-	void setWorld(DirectX::XMMATRIX world)
+	DirectX::XMFLOAT4X4 setWorld(DirectX::XMMATRIX world)
 	{
 		DirectX::XMFLOAT4X4 floatWorld;
 		DirectX::XMStoreFloat4x4(&floatWorld, XMMatrixTranspose(world));
-		World = floatWorld;
+		return floatWorld;
 	}
-	void setWIT(DirectX::XMMATRIX WIT)
-	{
-		DirectX::XMFLOAT4X4 floatWIT;
-		DirectX::XMStoreFloat4x4(&floatWIT, XMMatrixTranspose(WIT));
-		World = floatWIT;
-	}
-	void setHasTexture(bool hastexture)
-	{
-		this->hasTexture = hastexture;
-	}
-	void setHasNormal(bool hasnormal)
-	{
-		this->hasNormal = hasnormal;
-	}
-	void setTime(float time)
-	{
-		this->time = time;
-	}
-	DirectX::XMFLOAT4X4 getWorld()
-	{
-		return World;
-	}
-
 };
 
 struct ShadowConstantBuffer

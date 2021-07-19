@@ -275,6 +275,9 @@ bool Graphics::createConstantBuffer(ID3D11Device* pDevice, ID3D11Buffer*& pConst
 	constantSubresourceData.SysMemPitch = 0;
 	constantSubresourceData.SysMemSlicePitch = 0;
 
+
+	std::cout << sizeof(matrixes) << std::endl;
+
 	HRESULT hr = pDevice->CreateBuffer(&constantBufferDesc, &constantSubresourceData, std::addressof(pConstantBuffer));
 	if (FAILED(hr))
 	{

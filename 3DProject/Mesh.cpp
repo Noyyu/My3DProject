@@ -1149,11 +1149,11 @@ bool Mesh::drawObjModel(ID3D11DeviceContext* immediateContext, ID3D11Buffer*& pC
         DirectX::XMMATRIX translate = DirectX::XMMatrixTranslation(0,0,0);
         DirectX::XMMATRIX world = scale * translate;
 
-        this->objMats.setWorld(world);
-        this->objMats.setWVP(world * camera->getCameraView() * camera->getCameraProjection());
+        this->objMats.World = matrixFunction.setWorld(world);
+        this->objMats.WorldViewProjection = matrixFunction.setWVP(world * camera->getCameraView() * camera->getCameraProjection());
 
-        this->objMats.setHasTexture(material[i].hasTexture);
-        this->objMats.setHasNormal(material[i].hasNormalMap);
+        this->objMats.hasTexture = material[i].hasTexture;
+        this->objMats.hasNormal = material[i].hasNormalMap;
 
         immediateContext->VSSetConstantBuffers(0, 1, &pConstantBuffer);
         
@@ -1162,19 +1162,19 @@ bool Mesh::drawObjModel(ID3D11DeviceContext* immediateContext, ID3D11Buffer*& pC
         //Skickar vidare textureen till den första slotten om den finns. 
         if (material[i].hasTexture == true)
         {
-            this->objMats.setHasTexture(true);
+            this->objMats.hasNormal = true;
             immediateContext->PSSetShaderResources(0, 1, &meshShaderResourceView[0]);
         }
         
         //Skicka in nomral map på den andra slotten om den finns. 
         if (material[i].hasNormalMap == true)
         {
-            this->objMats.setHasNormal(true);
+            this->objMats.hasNormal = true;
             immediateContext->PSSetShaderResources(1, 1, &meshShaderResourceView[1]);
         }
 
         this->time += 1;
-        this->objMats.setTime(time);
+        this->objMats.time = time;
 
         immediateContext->UpdateSubresource(pConstantBuffer, 0, NULL, &objMats, 0, 0);
 
