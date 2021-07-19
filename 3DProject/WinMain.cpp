@@ -302,16 +302,16 @@ int	CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 	Mesh objObject2(pDevice);
 	Meshs testObject;//Remove basic import
 
-	std::wstring fileName = L"C:/Users/Nikki/OneDrive/Skrivbord/Skolan/Flowie.obj";
-	std::wstring fileName2 = L"C:/Users/Nikki/OneDrive/Skrivbord/Skolan/HightPlane.obj";
-	std::wstring filePath = L"C:/Users/Nikki/OneDrive/Skrivbord/Skolan/";
+	std::wstring fileName = L"Objects/Flowie.obj";
+	std::wstring fileName2 = L"Objects/HightPlane.obj";
+	std::wstring filePath = L"Objects/";
 	
 	objObject.setFilePath(filePath);
 	objObject2.setFilePath(filePath);
 	objObject.loadObjModel(pDevice, fileName2, true, true);
 	objObject2.loadObjModel(pDevice, fileName, false, true);
 
-	HeightMap heightMap("C:/Users/Nikki/OneDrive/Skrivbord/Skolan/HeightMap.png");
+	HeightMap heightMap("Objects/HeightMap.png");
 
 	//-----------------------------------------------------------------//
 
