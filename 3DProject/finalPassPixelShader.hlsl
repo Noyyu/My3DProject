@@ -40,9 +40,9 @@ struct myMatrixes //Need to register this one as well.
     float4x4 WorldViewProjection;
     float4x4 World;
     float time;
-    bool hasTexture;
-    bool hasNormal;
-    //Add num of lights
+    int hasTexture;
+    int hasNormal;
+    int animated;
 };
 cbuffer matrixes
 {
@@ -54,10 +54,10 @@ float4 main(in PSInput input) : sv_Target ////Skriver SV_OutputControlPointID ti
 {
     const float lightIntensity = 0.5;
     const float lightShininess = 128;
-    const float lightSpecularPower = 5;
+    const float lightSpecularPower = 10;
     
     float4 finalColor = float4(0.0f, 0.0f, 0.0f, 1.0f);
-    float4 lightColor = float4(1.0f, 1.0f, 1.0f, 1.0f);
+    float4 lightColor = float4(1.0f, 1.0f, 0.90f, 1.0f);
     
     float4 albedo = diffuseTexture.Sample(samplerThing, input.textureCoordinates);
     float3 normals = normalTexture.Sample(samplerThing, input.textureCoordinates);

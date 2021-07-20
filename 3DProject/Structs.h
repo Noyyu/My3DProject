@@ -74,29 +74,19 @@ struct Vertex
 	{
 	}
 };
-
 ALIGN16
 struct Light // https://www.braynzarsoft.net/viewtutorial/q16390-17-point-lights
 {
+	DirectX::XMFLOAT4 position = {}; // 4 x float = 16 bytes
+	DirectX::XMFLOAT4 attenuation = {}; // 4 x float = 16 bytes
+	DirectX::XMFLOAT4 ambient = {}; // 4 x float = 16 bytes
+	DirectX::XMFLOAT4 diffuse = {}; // 4 x float = 16 bytes
+	DirectX::XMFLOAT4 cameraPosition = {}; // 4 x float = 16 bytes
+	DirectX::XMFLOAT4 direction = {}; // 4 x float = 16 bytes
+	float range = 0; // 4 bytes
 
-	DirectX::XMFLOAT4 position = {};
-	DirectX::XMFLOAT4 attenuation = {};
-	DirectX::XMFLOAT4 ambient = {};
-	DirectX::XMFLOAT4 diffuse = {};
-	DirectX::XMFLOAT4 cameraPosition = {};
-	DirectX::XMFLOAT4 direction = {};
-	float range = 0;
-
-
-	Light()
-	{
-		//Fills a block of memory with zeros.
-		ZeroMemory(this, sizeof(Light));
-	}
-	void updateCameraPosition(DirectX::XMFLOAT4 cameraPosition)
-	{
-		this->cameraPosition = cameraPosition;
-	}
+	// (16 x 6) + 4 = 100 bytes
+	// Aligns up to 112 bytes
 };
 
 ALIGN16
@@ -105,8 +95,9 @@ struct constantBufferMatrixes
 	DirectX::XMFLOAT4X4 WorldViewProjection = {};
 	DirectX::XMFLOAT4X4 World = {};
 	float time = 0;
-	int hasTexture = 1;
-	int hasNormal  = 1;
+	int hasTexture = 0;
+	int hasNormal  = 0;
+	int animated = 0;
 };
 
 struct matrixFunctions

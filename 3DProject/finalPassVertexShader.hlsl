@@ -6,8 +6,9 @@ struct myMatrixes
     float4x4 WorldViewProjection;
     float4x4 World;
     float time;
-    bool hasTexture;
-    bool hasNormal;
+    int hasTexture;
+    int hasNormal;
+    int animated;
 };
 
 cbuffer constantBuffer

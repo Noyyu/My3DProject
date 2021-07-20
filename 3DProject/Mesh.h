@@ -75,6 +75,7 @@ private:
 	int totalVertices = 0;
 	int meshSubsets = 0;
 	bool hasNormalMap = false;
+	int animation = 0;
 
 	constantBufferMatrixes objMats;
 	matrixFunctions matrixFunction;
@@ -122,4 +123,5 @@ public:
 
 	//Create a draw shadow function here maybe. 
 	void shutDownMesh();
+	void Animation(bool animation);
 };

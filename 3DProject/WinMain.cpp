@@ -15,7 +15,7 @@ void geomatryPass(ID3D11DeviceContext* immediateContext, ID3D11RenderTargetView*
 	ID3D11PixelShader* pixelShader, ID3D11InputLayout* inputLayout, ID3D11Buffer* vertexBuffer,
 	ID3D11Buffer*& pConstantBuffer, ID3D11ShaderResourceView* textureSRV,
 	ID3D11SamplerState* sampler, ID3D11Buffer*& pPixelConstantBuffer, constantBufferMatrixes matrixes, 
-	Deferred deferred, Mesh& objObject, objMatrixes objMats, Camera* camera, Meshs testobject, Mesh& objObject2, ID3D11GeometryShader* geomatryShader, ID3D11InputLayout* geomatryInputLayout)
+	Deferred deferred, Mesh& objObject, objMatrixes objMats, Camera* camera, Meshs testobject, Mesh& objObject2, ID3D11GeometryShader* geomatryShader, ID3D11InputLayout* geomatryInputLayout, Mesh& WaterMesh)
 {
 
 	//immidiate context is the link or "adapter" to the hardwere. This is the thing that makes you see shit on the screen. 
@@ -65,6 +65,7 @@ void geomatryPass(ID3D11DeviceContext* immediateContext, ID3D11RenderTargetView*
 
 	objObject.drawObjModel(immediateContext, pConstantBuffer, deferred, vertexShader, pixelShader, sampler, pPixelConstantBuffer, camera);
 	objObject2.drawObjModel(immediateContext, pConstantBuffer, deferred, vertexShader, pixelShader, sampler, pPixelConstantBuffer, camera);
+	WaterMesh.drawObjModel(immediateContext, pConstantBuffer, deferred, vertexShader, pixelShader, sampler, pPixelConstantBuffer, camera);
 }
 
 void lightPass(ID3D11DeviceContext* immediateContext, ID3D11RenderTargetView* renderTargetView,
@@ -187,11 +188,12 @@ int	CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 	ID3D11UnorderedAccessView* backBuffer = nullptr; // Delete
 	ID3D11ComputeShader* computeShader    = nullptr; // Delete
 
-	//matrixsstuff
-	constantBufferMatrixes matrixes;//used to send the world matrix and worldviewprojection matrixes to the shader later
+	//matrixsstuff for the quad
+	constantBufferMatrixes matrixes;//used to send the world matrix and worldviewprojection matrixes to the shader later for 
 	DirectX::XMMATRIX WorldViewProjection = DirectX::XMMatrixIdentity();
 	DirectX::XMMATRIX World = DirectX::XMMatrixIdentity();
-
+	matrixes.hasNormal  = false;
+	matrixes.hasTexture = true;
 	matrixFunctions matrixFunction;
 
 	//-----------------------------------------------------------------//
@@ -199,12 +201,13 @@ int	CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 	//-----------------------------------------------------------------//
 	//I'll use this as my shadow light. 
 	Light light;
-	light.position = DirectX::XMFLOAT4(2.0f, 5.0f, 10.0f, 1.0f);
-	light.ambient = DirectX::XMFLOAT4(0.2f, 0.2f, 0.2f, 1.0f);
-	light.diffuse = DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
-	light.attenuation = DirectX::XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f);
+	light.position       = DirectX::XMFLOAT4(-5.0f, 5.0f, 5.0f, 1.0f);
+	light.attenuation    = DirectX::XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f);
+	light.ambient        = DirectX::XMFLOAT4(0.2f, 0.2f, 0.2f, 1.0f);
+	light.diffuse        = DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
 	light.cameraPosition = DirectX::XMFLOAT4(DirectX::XMVectorGetX(walkingCamera->getCameraPos()), DirectX::XMVectorGetY(walkingCamera->getCameraPos()), DirectX::XMVectorGetZ(walkingCamera->getCameraPos()), 1.0f);
-	light.range = 5.0f;
+	light.direction      = DirectX::XMFLOAT4(1.0f, 0.0f, 0.0f, 0.0f);
+	light.range = 10.0f;
 
 
 	//-----------------------------------------------------------------//
@@ -300,16 +303,24 @@ int	CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 	ID3D11SamplerState* objSampler;
 	Mesh objObject(pDevice); 
 	Mesh objObject2(pDevice);
+	Mesh WaterMesh(pDevice);
 	Meshs testObject;//Remove basic import
 
 	std::wstring fileName = L"Objects/Flowie.obj";
 	std::wstring fileName2 = L"Objects/HightPlane.obj";
+	std::wstring waterMeshPath = L"Objects/WaterMesh.obj";
 	std::wstring filePath = L"Objects/";
 	
+
 	objObject.setFilePath(filePath);
 	objObject2.setFilePath(filePath);
+	WaterMesh.setFilePath(filePath);
 	objObject.loadObjModel(pDevice, fileName2, true, true);
-	objObject2.loadObjModel(pDevice, fileName, false, true);
+	objObject2.loadObjModel(pDevice, fileName, false, true); //False = normalerna hamnar på fel håll men specular funkar??
+	WaterMesh.loadObjModel(pDevice, waterMeshPath, true, true);
+
+	WaterMesh.Animation(true);
+	objObject2.Animation(true);
 
 	HeightMap heightMap("Objects/HeightMap.png");
 
@@ -364,10 +375,11 @@ int	CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 			// Update matrixes
 			//-----------------------------------------------------------------//
 			
-			light.updateCameraPosition(DirectX::XMFLOAT4(DirectX::XMVectorGetX(walkingCamera->getCameraPos()), DirectX::XMVectorGetY(walkingCamera->getCameraPos()), DirectX::XMVectorGetZ(walkingCamera->getCameraPos()),1.0f));
+
+			light.cameraPosition = DirectX::XMFLOAT4(DirectX::XMVectorGetX(walkingCamera->getCameraPos()), DirectX::XMVectorGetY(walkingCamera->getCameraPos()), DirectX::XMVectorGetZ(walkingCamera->getCameraPos()), 1.0f);
+			//light.updateCameraPosition(DirectX::XMFLOAT4(DirectX::XMVectorGetX(walkingCamera->getCameraPos()), DirectX::XMVectorGetY(walkingCamera->getCameraPos()), DirectX::XMVectorGetZ(walkingCamera->getCameraPos()),1.0f));
 
 			walkingCamera->moveCameraWithInput();
-			/*RedirectIOToConsole(walkingCamera->getMouseState());*/
 
 			auto start = timer.now();
 
@@ -378,18 +390,11 @@ int	CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 			WorldViewProjection = World * walkingCamera->getCameraView() * walkingCamera->getCameraProjection();
 
 			time += 1;
-
-			
-
 			matrixes.World = matrixFunction.setWorld(World);
 			matrixes.WorldViewProjection = matrixFunction.setWVP(WorldViewProjection);
 			matrixes.time = time;
 
 			immediateContext->UpdateSubresource(pConstantBuffer, 0, NULL, &matrixes, 0, 0);
-
-			//matrixes.setWorld(World);
-			//matrixes.setWVP(WorldViewProjection);
-			//matrixes.setTime(time);
 
 			//-----------------------------------------------------------------//
 			// Geomatry pass and Light pass Update
@@ -417,7 +422,8 @@ int	CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 				testObject,
 				objObject2,
 				geomatryShader,
-				geomatryInputLayout
+				geomatryInputLayout,
+				WaterMesh
 			);
 
 			//Draw shadow here maybe?

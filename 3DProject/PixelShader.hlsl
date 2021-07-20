@@ -29,6 +29,7 @@ struct Matrixes
     float time;
     int hasTexture;
     int hasNormal;
+    int animated;
 };
 
 cbuffer constantBuffer
@@ -79,7 +80,6 @@ PixelShaderOutput main(PixelShaderInput input)
     
     float4 normalWorldSpace = normalize(input.normal);
     output.Normal = normalWorldSpace;
-    
     
     if (matrixes.hasNormal == 1)
     {

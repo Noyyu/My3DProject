@@ -275,9 +275,6 @@ bool Graphics::createConstantBuffer(ID3D11Device* pDevice, ID3D11Buffer*& pConst
 	constantSubresourceData.SysMemPitch = 0;
 	constantSubresourceData.SysMemSlicePitch = 0;
 
-
-	std::cout << sizeof(matrixes) << std::endl;
-
 	HRESULT hr = pDevice->CreateBuffer(&constantBufferDesc, &constantSubresourceData, std::addressof(pConstantBuffer));
 	if (FAILED(hr))
 	{
@@ -300,6 +297,8 @@ bool Graphics::createPixelConstantBuffer(ID3D11Device* pDevice, Light& light, ID
 	constantBufferDesc.MiscFlags = 0;
 	constantSubresourceData.SysMemPitch = 0;
 	constantSubresourceData.SysMemSlicePitch = 0;
+
+	std::cout << sizeof(light) << std::endl; //Says 112 but 144 is expected. //says 100 without ALIGN 16
 
 	HRESULT hr = pDevice->CreateBuffer(&constantBufferDesc, &constantSubresourceData, std::addressof(pPixelConstantBuffer));
 	return !FAILED(hr);

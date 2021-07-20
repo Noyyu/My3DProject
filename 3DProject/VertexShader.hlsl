@@ -14,6 +14,7 @@ struct Matrixes
     float time;
     int hasTexture;
     int hasNormal;
+    int animated;
 };
 
 cbuffer constantBuffer
@@ -43,13 +44,23 @@ struct VertexShaderOutput
 VertexShaderOutput main(VertexShaderInput input)
 {
     VertexShaderOutput output;
-    float speed = 1;
+    float speed = 0.0005;
     
     float4 tangentWS = normalize(mul(input.tangent, matrixes.World));
     float4 normalWS = mul(input.normal, matrixes.World);
     
     output.position = mul(float4(input.position, 1.0f), matrixes.WorldViewProjection); //converts position to projection space
-    output.textureCoordinates = float2(input.textureCoordinates.x, input.textureCoordinates.y + (matrixes.time * speed));
+    
+    if (matrixes.animated)
+    {
+        output.textureCoordinates = float2(input.textureCoordinates.x, input.textureCoordinates.y +(matrixes.time * speed)); //Moving stuff. 
+
+    }
+    else
+    {
+        output.textureCoordinates = float2(input.textureCoordinates.x, input.textureCoordinates.y); //Moving stuff. 
+    }
+
     output.color = input.color;
     output.normal = mul(float4(input.normal, 1), matrixes.World); //Converts normal to world space
     

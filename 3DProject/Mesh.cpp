@@ -1154,22 +1154,29 @@ bool Mesh::drawObjModel(ID3D11DeviceContext* immediateContext, ID3D11Buffer*& pC
 
         this->objMats.hasTexture = material[i].hasTexture;
         this->objMats.hasNormal = material[i].hasNormalMap;
+        this->objMats.animated = this->animation;
 
         immediateContext->VSSetConstantBuffers(0, 1, &pConstantBuffer);
         
-        immediateContext->PSSetConstantBuffers(1, 1, &pConstantBuffer);
+        immediateContext->VSSetShader(vertexShader, nullptr, 0);
+        immediateContext->PSSetShader(pixelShader, nullptr, 0);
+
+
+        immediateContext->PSSetSamplers(0, 1, &sampler);
+        immediateContext->PSSetConstantBuffers(0, 1, &pConstantBuffer);
+        
 
         //Skickar vidare textureen till den första slotten om den finns. 
         if (material[i].hasTexture == true)
         {
-            this->objMats.hasNormal = true;
+
             immediateContext->PSSetShaderResources(0, 1, &meshShaderResourceView[0]);
         }
         
         //Skicka in nomral map på den andra slotten om den finns. 
         if (material[i].hasNormalMap == true)
         {
-            this->objMats.hasNormal = true;
+
             immediateContext->PSSetShaderResources(1, 1, &meshShaderResourceView[1]);
         }
 
@@ -1178,12 +1185,8 @@ bool Mesh::drawObjModel(ID3D11DeviceContext* immediateContext, ID3D11Buffer*& pC
 
         immediateContext->UpdateSubresource(pConstantBuffer, 0, NULL, &objMats, 0, 0);
 
-        immediateContext->VSSetShader(vertexShader, nullptr, 0);
-        immediateContext->PSSetShader(pixelShader, nullptr, 0);
 
-        
-        immediateContext->PSSetSamplers(0, 1, &sampler);
-        immediateContext->PSSetConstantBuffers(0u, 1, &pPixelConstantBuffer);
+
         
         //deferred.setRenderTargets(immediateContext);
         immediateContext->Draw(totalVertices, 0);
@@ -1226,4 +1229,9 @@ void Mesh::shutDownMesh()
 {
     meshVertexBuffer->Release();
     meshIndexBuffer->Release();
+}
+
+void Mesh::Animation(bool animation)
+{
+    this->animation = animation;
 }
