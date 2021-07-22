@@ -306,7 +306,7 @@ int	CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 	Mesh WaterMesh(pDevice);
 	Meshs testObject;//Remove basic import
 
-	std::wstring fileName = L"Objects/Flowie.obj";
+	std::wstring fileName = L"Objects/Cube.obj";
 	std::wstring fileName2 = L"Objects/HightPlane.obj";
 	std::wstring waterMeshPath = L"Objects/WaterMesh.obj";
 	std::wstring filePath = L"Objects/";

@@ -287,6 +287,7 @@ bool Mesh::loadObjModel(ID3D11Device* device, std::wstring fileName, bool isRigh
                                 whichPart++; //moves to the next vertex part. 
                             }
                         }
+                        bool vertAlreadyExists = false;
 
                         //here maybe?
                         //check to make sure there is at least one subset (As we know a subset is a group with the same attributes. there need to be at least one.)
@@ -297,9 +298,28 @@ bool Mesh::loadObjModel(ID3D11Device* device, std::wstring fileName, bool isRigh
                         }
 
                         //Avoid dublicate verts (For index buffer stuff)
-                        bool vertAlreadyExists = false;
+                        //........THIS PART NEVER WORKS.......//
+                        if (totalVertices >= 3)
+                        {
+                            for (int iCheck = 0; iCheck < totalVertices; iCheck++)
+                            {
+                                //If the vertex position and texture coordinate in memory are the same
+                                //As the vertex position and texture coordinate we just now got out
+                                //of the obj file, we will set this faces vertex index to the vertex's
+                                //index value in memory. This makes sure we don't create duplicate vertices
 
-                        //If this vertex doen't already exist, put it in the array. 
+                                if (vertexPositionIndexTemp == vertexPositionIndex[iCheck] && !vertAlreadyExists)
+                                {
+                                    if (vertexTextureCoordinatesIndexTemp == vertexTextureCoordinateIndex[iCheck])
+                                    {
+                                        indices.push_back(iCheck); // Give index to vertex (The same index may be given to several vertices)
+                                        vertAlreadyExists = true;  // And the vertex already exist in memory. 
+                                    }
+                                }
+                            }
+                        }
+
+                        //If this vertex doesn't already exist, put it in the array. 
                         if (vertAlreadyExists == false)
                         {
                             vertexPositionIndex.push_back(vertexPositionIndexTemp);

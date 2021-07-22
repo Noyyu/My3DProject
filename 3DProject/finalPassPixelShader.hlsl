@@ -140,6 +140,6 @@ float4 main(in PSInput input) : sv_Target ////Skriver SV_OutputControlPointID ti
         return (albedo * ambient);
     }
     
-    return float4(finalColor);
+    return float4(albedo);
 
 }
