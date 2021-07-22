@@ -201,7 +201,7 @@ int	CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 	//-----------------------------------------------------------------//
 	//I'll use this as my shadow light. 
 	Light light;
-	light.position       = DirectX::XMFLOAT4(-5.0f, 5.0f, 5.0f, 1.0f);
+	light.position       = DirectX::XMFLOAT4(5.0f, 5.0f, 5.0f, 1.0f); // X+ = >, Z+ = ^
 	light.attenuation    = DirectX::XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f);
 	light.ambient        = DirectX::XMFLOAT4(0.2f, 0.2f, 0.2f, 1.0f);
 	light.diffuse        = DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
@@ -315,9 +315,9 @@ int	CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 	objObject.setFilePath(filePath);
 	objObject2.setFilePath(filePath);
 	WaterMesh.setFilePath(filePath);
-	objObject.loadObjModel(pDevice, fileName2, true, true);
+	objObject.loadObjModel(pDevice, fileName2, false, true);
 	objObject2.loadObjModel(pDevice, fileName, false, true); //False = normalerna hamnar på fel håll men specular funkar??
-	WaterMesh.loadObjModel(pDevice, waterMeshPath, true, true);
+	WaterMesh.loadObjModel(pDevice, waterMeshPath, false, true);
 
 	WaterMesh.Animation(true);
 	objObject2.Animation(true);

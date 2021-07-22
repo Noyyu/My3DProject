@@ -121,7 +121,7 @@ bool Mesh::loadObjModel(ID3D11Device* device, std::wstring fileName, bool isRigh
                 }
                 else
                 {
-                    vertexPosition.push_back(DirectX::XMFLOAT3(vx, vy, vz));
+                    vertexPosition.push_back(DirectX::XMFLOAT3(vx, vy, vz ));
                 }
             }
             ///----- Vertex texture coordinate -----///
@@ -1060,15 +1060,15 @@ bool Mesh::loadObjModel(ID3D11Device* device, std::wstring fileName, bool isRigh
             }
             else
             {
-                normalSum = -normalSum / facesUsing; //invert cuz of coordinet system stuff
-                tangentSum = -tangentSum / facesUsing;
+                normalSum = normalSum / facesUsing; //invert cuz of coordinet system stuff
+                tangentSum = tangentSum / facesUsing;
             }
 
             //Normalize the normalSum vector and tangent
             normalSum = DirectX::XMVector3Normalize(normalSum);
             tangentSum = DirectX::XMVector3Normalize(tangentSum);
 
-            //Store the normal and tangent in our current vertex
+            //Store the normal and tangent in the current vertex
             vertices[i].normal.x = DirectX::XMVectorGetX(normalSum);
             vertices[i].normal.y = DirectX::XMVectorGetY(normalSum);
             vertices[i].normal.z = DirectX::XMVectorGetZ(normalSum);
@@ -1146,7 +1146,7 @@ bool Mesh::drawObjModel(ID3D11DeviceContext* immediateContext, ID3D11Buffer*& pC
         immediateContext->IASetVertexBuffers(0, 1, &meshVertexBuffer, &stride, &offset);
 
         DirectX::XMMATRIX scale = DirectX::XMMatrixScaling(1,1,1);
-        DirectX::XMMATRIX translate = DirectX::XMMatrixTranslation(0,0,0);
+        DirectX::XMMATRIX translate = DirectX::XMMatrixTranslation(0,0,0); // X+ = >, Z+ = ^
         DirectX::XMMATRIX world = scale * translate;
 
         this->objMats.World = matrixFunction.setWorld(world);

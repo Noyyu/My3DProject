@@ -69,8 +69,8 @@ struct Vertex
 
 	}
 
-	Vertex(DirectX::XMFLOAT3 position, DirectX::XMFLOAT3 vertexColor, DirectX::XMFLOAT2 textureCoordinates, DirectX::XMFLOAT3 normal/*, bool hasNormalMap*/, DirectX::XMFLOAT3 tangent)
-		:pos(position), color(vertexColor), textureCoordenates(textureCoordinates), normal(normal)/*, hasNormalMap(hasNormalMap)*/, tangents(tangent)
+	Vertex(DirectX::XMFLOAT3 position, DirectX::XMFLOAT3 vertexColor, DirectX::XMFLOAT2 textureCoordinates, DirectX::XMFLOAT3 normalsd, DirectX::XMFLOAT3 tangent)
+		:pos(position), color(vertexColor), textureCoordenates(textureCoordinates), normal(normal), tangents(tangent)
 	{
 	}
 };

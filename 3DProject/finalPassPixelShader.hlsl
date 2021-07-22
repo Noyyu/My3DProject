@@ -71,7 +71,7 @@ float4 main(in PSInput input) : sv_Target ////Skriver SV_OutputControlPointID ti
 
     //Vectors
     const float3 pointToLight = -normalize(light.position.xyz - position);
-    const float3 pointToCamera = normalize(light.cameraPosition.xyz - position.xyz);
+    const float3 pointToCamera = -normalize(light.cameraPosition.xyz - position.xyz);
     
     
     //POINT LIGHT THINGS
