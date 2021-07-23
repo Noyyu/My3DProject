@@ -222,7 +222,7 @@ bool Mesh::loadObjModel(ID3D11Device* device, std::wstring fileName, bool isRigh
                         std::wstring vertexPart = {};
                         int whichPart = 0; // checks if its vertex pos, vertex tc or vertex normal, this one gets added on after every itteration. 
 
-                        for (int j = 0; j < vertexDefinition.length(); ++j) //goes through the face data string
+                        for (int j = 0; j < vertexDefinition.length(); j++) //goes through the face data string
                         {
                             if (vertexDefinition[j] != '/') //If there is no divider "/", add a char to vertexPart
                             {
@@ -325,7 +325,7 @@ bool Mesh::loadObjModel(ID3D11Device* device, std::wstring fileName, bool isRigh
                             vertexPositionIndex.push_back(vertexPositionIndexTemp);
                             vertexTextureCoordinateIndex.push_back(vertexTextureCoordinatesIndexTemp);
                             vertexNormalIndex.push_back(vertexNormalIndexTemp);
-                            totalVertices++;
+                            ++totalVertices;
                             indices.push_back(totalVertices - 1); //Set index for this vertex. 
                         }
 
@@ -666,7 +666,7 @@ bool Mesh::loadObjModel(ID3D11Device* device, std::wstring fileName, bool isRigh
 
                                     if (checkChar == '.') //file extention (like .jpg)
                                     {
-                                        for (int i = 0; i < 3; ++i) //Will only spoort file extentions with 3 letter (which is fine >:c)
+                                        for (int i = 0; i < 3; i++) //Will only spoort file extentions with 3 letter (which is fine >:c)
                                         {
                                             fileNamePath += fileIn.get();
                                             textureFilePathEnd = true;
@@ -679,7 +679,7 @@ bool Mesh::loadObjModel(ID3D11Device* device, std::wstring fileName, bool isRigh
                                 //check if this texture is already loaded
                                 bool alreadyLoaded = false;
 
-                                for (int i = 0; i < textureNameArray.size(); ++i)
+                                for (int i = 0; i < textureNameArray.size(); i++)
                                 {
                                     if (fileNamePath == textureNameArray[i])
                                     {
@@ -791,7 +791,7 @@ bool Mesh::loadObjModel(ID3D11Device* device, std::wstring fileName, bool isRigh
 
                             if (checkChar == '.') //file extention (like .jpg)
                             {
-                                for (int i = 0; i < 3; ++i) //Will only spoort file extentions with 3 letter (which is fine >:c)
+                                for (int i = 0; i < 3; i++) //Will only spoort file extentions with 3 letter (which is fine >:c)
                                 {
                                     fileNamePath += fileIn.get();
                                     textureFilePathEnd = true;
@@ -805,7 +805,7 @@ bool Mesh::loadObjModel(ID3D11Device* device, std::wstring fileName, bool isRigh
                         //check if this texture is already loaded
                         bool alreadyLoaded = false;
 
-                        for (int i = 0; i < textureNameArray.size(); ++i)
+                        for (int i = 0; i < textureNameArray.size(); i++)
                         {
                             if (fileNamePath == textureNameArray[i])
                             {
@@ -938,7 +938,7 @@ bool Mesh::loadObjModel(ID3D11Device* device, std::wstring fileName, bool isRigh
     //we will give it a default material, which will be the first material in the material vector.
 
     //Set the subsets material to the index value of the material in the material array. 
-    for (int i = 0; i < meshSubsets; ++i)
+    for (int i = 0; i < meshSubsets; i++)
     {
         bool hasMaterial = false;
         for (int j = 0; j < material.size(); j++)
@@ -964,7 +964,7 @@ bool Mesh::loadObjModel(ID3D11Device* device, std::wstring fileName, bool isRigh
     Vertex tempVertex = {};
     //MeshData meshData;
     //Add all the vertex attributes into a Mesh Data Struct for tangent calculations. 
-    for (int j = 0; j < totalVertices; ++j)
+    for (int j = 0; j < totalVertices; j++)
     {
         tempVertex.pos = vertexPosition[vertexPositionIndex[j]];
         
@@ -1004,7 +1004,7 @@ bool Mesh::loadObjModel(ID3D11Device* device, std::wstring fileName, bool isRigh
 
         //Compute face normals
         //And Tangents
-        for (int i = 0; i < meshTriangles; ++i)
+        for (int i = 0; i < meshTriangles; i++)
         {
             //Get the vector describing one edge of our triangle (edge 0,2)
             vecX = vertices[indices[(i * 3)]].pos.x - vertices[indices[(i * 3) + 2]].pos.x; //indices används inte just nu så därför funkar det inte. 
@@ -1046,10 +1046,10 @@ bool Mesh::loadObjModel(ID3D11Device* device, std::wstring fileName, bool isRigh
         float tX, tY, tZ;    //temp axis variables
 
         //Go through each vertex
-        for (int i = 0; i < totalVertices; ++i)
+        for (int i = 0; i < totalVertices; i++)
         {
             //Check which triangles use this vertex
-            for (int j = 0; j < meshTriangles; ++j)
+            for (int j = 0; j < meshTriangles; j++)
             {
                 if (indices[j * 3] == i ||
                     indices[(j * 3) + 1] == i ||
