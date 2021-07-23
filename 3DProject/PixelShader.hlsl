@@ -65,7 +65,6 @@ PixelShaderOutput main(PixelShaderInput input)
     PixelShaderOutput output;
 
     // sample the diffus map
-    //float3 diffuseMap = diffuseTexture.Sample(testSampler, input.textureCoordinates); //Har ersatt denna med normal mappen just nu.
     
     input.normal = normalize(input.normal);
     

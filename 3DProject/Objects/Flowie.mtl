@@ -1,14 +1,26 @@
-# Blender MTL File: 'None'
-# Material Count: 1
-
-newmtl Flowie_initialShadingGroup
-Ns 0.000000
-Ka 1.000000 1.000000 1.000000
-Kd 0.000000 0.000000 0.000000
-Ks 0.000000 0.000000 0.000000
-Ke 0.000000 0.000000 0.000000
-Ni 1.000000
-d 1.000000
-illum 1
+newmtl Flowie:Flowie_initialShadingGroup
+illum 4
+Kd 0.00 0.00 0.00
+Ka 1.00 1.00 1.00
+Tf 1.00 1.00 1.00
 map_Kd VillagerTrades.png
 bump  -bm 1 normalMap.png
+Ni 1.00
+Ks 0.00 0.00 0.00
+Ns 0.00
+newmtl HightPlane:initialShadingGroup
+illum 4
+Kd 0.00 0.00 0.00
+Ka 1.00 1.00 1.00
+Tf 1.00 1.00 1.00
+map_Kd normalMap.png
+bump  -bm 1 WaterTexture.png
+Ni 1.00
+Ks 0.00 0.00 0.00
+Ns 0.00
+newmtl initialShadingGroup
+illum 4
+Kd 0.50 0.50 0.50
+Ka 0.00 0.00 0.00
+Tf 1.00 1.00 1.00
+Ni 1.00

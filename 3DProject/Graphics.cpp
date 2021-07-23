@@ -298,8 +298,6 @@ bool Graphics::createPixelConstantBuffer(ID3D11Device* pDevice, Light& light, ID
 	constantSubresourceData.SysMemPitch = 0;
 	constantSubresourceData.SysMemSlicePitch = 0;
 
-	std::cout << sizeof(light) << std::endl; //Says 112 but 144 is expected. //says 100 without ALIGN 16
-
 	HRESULT hr = pDevice->CreateBuffer(&constantBufferDesc, &constantSubresourceData, std::addressof(pPixelConstantBuffer));
 	return !FAILED(hr);
 }

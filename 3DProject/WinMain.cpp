@@ -134,7 +134,7 @@ int	CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 	// Camera
 	//-----------------------------------------------------------------//
 
-	Camera* walkingCamera = new Camera({ 1.0f,0.0f, 2.0f }, { 0.0f, 0.0f, 1.0f }, { 0.0f, 1.0f, 0.0f }, WIDTH, HEIGHT);
+	Camera* walkingCamera = new Camera({ 0.0f, 2.0f, 0.0f }, { 0.0f, 0.0f, 1.0f }, { 0.0f, 1.0f, 0.0f }, WIDTH, HEIGHT);
 	walkingCamera->setWindowForMouse(windowHandle);
 
 
@@ -201,13 +201,13 @@ int	CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 	//-----------------------------------------------------------------//
 	//I'll use this as my shadow light. 
 	Light light;
-	light.position       = DirectX::XMFLOAT4(5.0f, 5.0f, 5.0f, 1.0f); // X+ = >, Z+ = ^
+	light.position       = DirectX::XMFLOAT4(0.0f, 5.0f, 5.0f, 1.0f); // X+ = >, Z+ = ^
 	light.attenuation    = DirectX::XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f);
 	light.ambient        = DirectX::XMFLOAT4(0.2f, 0.2f, 0.2f, 1.0f);
 	light.diffuse        = DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
 	light.cameraPosition = DirectX::XMFLOAT4(DirectX::XMVectorGetX(walkingCamera->getCameraPos()), DirectX::XMVectorGetY(walkingCamera->getCameraPos()), DirectX::XMVectorGetZ(walkingCamera->getCameraPos()), 1.0f);
 	light.direction      = DirectX::XMFLOAT4(1.0f, 0.0f, 0.0f, 0.0f);
-	light.range = 10.0f;
+	light.range = 100.0f;
 
 
 	//-----------------------------------------------------------------//
@@ -306,7 +306,7 @@ int	CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 	Mesh WaterMesh(pDevice);
 	Meshs testObject;//Remove basic import
 
-	std::wstring fileName = L"Objects/Cube.obj";
+	std::wstring fileName = L"Objects/Flowie.obj";
 	std::wstring fileName2 = L"Objects/HightPlane.obj";
 	std::wstring waterMeshPath = L"Objects/WaterMesh.obj";
 	std::wstring filePath = L"Objects/";

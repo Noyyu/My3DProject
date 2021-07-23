@@ -29,7 +29,7 @@ bool Mesh::loadObjModel(ID3D11Device* device, std::wstring fileName, bool isRigh
     std::wstring meshMaterialLib = {};
 
     //array that stores mesh information
-    std::vector<DWORD> indices = {}; // DWORD https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-dtyp/262627d8-3418-4627-9218-4ffe110850b2
+    indices = {}; // DWORD https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-dtyp/262627d8-3418-4627-9218-4ffe110850b2
     std::vector<DirectX::XMFLOAT3> vertexPosition = {};
     std::vector<DirectX::XMFLOAT3> vertexNormal = {};
     std::vector<DirectX::XMFLOAT2> vertexTextureCoordinates = {};
@@ -55,6 +55,7 @@ bool Mesh::loadObjModel(ID3D11Device* device, std::wstring fileName, bool isRigh
     int triangleCount = 0; // total triangles
     totalVertices = 0; 
     int meshTriangles = 0;
+    DirectX::XMFLOAT3 faces;
 
 
     ///----- Opening the OBJ file -----///
@@ -121,7 +122,7 @@ bool Mesh::loadObjModel(ID3D11Device* device, std::wstring fileName, bool isRigh
                 }
                 else
                 {
-                    vertexPosition.push_back(DirectX::XMFLOAT3(vx, vy, vz ));
+                    vertexPosition.push_back(DirectX::XMFLOAT3(vx, vy, vz));
                 }
             }
             ///----- Vertex texture coordinate -----///
@@ -138,7 +139,7 @@ bool Mesh::loadObjModel(ID3D11Device* device, std::wstring fileName, bool isRigh
                 }
                 else
                 {
-                    vertexTextureCoordinates.push_back(DirectX::XMFLOAT2(vtcu, 1.0f - vtcv));
+                    vertexTextureCoordinates.push_back(DirectX::XMFLOAT2(vtcu, vtcv));
                 }
 
                 hasTextureCoordinates = true;
@@ -222,7 +223,7 @@ bool Mesh::loadObjModel(ID3D11Device* device, std::wstring fileName, bool isRigh
                         std::wstring vertexPart = {};
                         int whichPart = 0; // checks if its vertex pos, vertex tc or vertex normal, this one gets added on after every itteration. 
 
-                        for (int j = 0; j < vertexDefinition.length(); j++) //goes through the face data string
+                        for (int j = 0; j < vertexDefinition.length(); ++j) //goes through the face data string
                         {
                             if (vertexDefinition[j] != '/') //If there is no divider "/", add a char to vertexPart
                             {
@@ -325,7 +326,7 @@ bool Mesh::loadObjModel(ID3D11Device* device, std::wstring fileName, bool isRigh
                             vertexPositionIndex.push_back(vertexPositionIndexTemp);
                             vertexTextureCoordinateIndex.push_back(vertexTextureCoordinatesIndexTemp);
                             vertexNormalIndex.push_back(vertexNormalIndexTemp);
-                            ++totalVertices;
+                            totalVertices++;
                             indices.push_back(totalVertices - 1); //Set index for this vertex. 
                         }
 
@@ -666,7 +667,7 @@ bool Mesh::loadObjModel(ID3D11Device* device, std::wstring fileName, bool isRigh
 
                                     if (checkChar == '.') //file extention (like .jpg)
                                     {
-                                        for (int i = 0; i < 3; i++) //Will only spoort file extentions with 3 letter (which is fine >:c)
+                                        for (int i = 0; i < 3; ++i) //Will only spoort file extentions with 3 letter (which is fine >:c)
                                         {
                                             fileNamePath += fileIn.get();
                                             textureFilePathEnd = true;
@@ -679,7 +680,7 @@ bool Mesh::loadObjModel(ID3D11Device* device, std::wstring fileName, bool isRigh
                                 //check if this texture is already loaded
                                 bool alreadyLoaded = false;
 
-                                for (int i = 0; i < textureNameArray.size(); i++)
+                                for (int i = 0; i < textureNameArray.size(); ++i)
                                 {
                                     if (fileNamePath == textureNameArray[i])
                                     {
@@ -791,7 +792,7 @@ bool Mesh::loadObjModel(ID3D11Device* device, std::wstring fileName, bool isRigh
 
                             if (checkChar == '.') //file extention (like .jpg)
                             {
-                                for (int i = 0; i < 3; i++) //Will only spoort file extentions with 3 letter (which is fine >:c)
+                                for (int i = 0; i < 3; ++i) //Will only spoort file extentions with 3 letter (which is fine >:c)
                                 {
                                     fileNamePath += fileIn.get();
                                     textureFilePathEnd = true;
@@ -805,7 +806,7 @@ bool Mesh::loadObjModel(ID3D11Device* device, std::wstring fileName, bool isRigh
                         //check if this texture is already loaded
                         bool alreadyLoaded = false;
 
-                        for (int i = 0; i < textureNameArray.size(); i++)
+                        for (int i = 0; i < textureNameArray.size(); ++i)
                         {
                             if (fileNamePath == textureNameArray[i])
                             {
@@ -938,7 +939,7 @@ bool Mesh::loadObjModel(ID3D11Device* device, std::wstring fileName, bool isRigh
     //we will give it a default material, which will be the first material in the material vector.
 
     //Set the subsets material to the index value of the material in the material array. 
-    for (int i = 0; i < meshSubsets; i++)
+    for (int i = 0; i < meshSubsets; ++i)
     {
         bool hasMaterial = false;
         for (int j = 0; j < material.size(); j++)
@@ -964,7 +965,7 @@ bool Mesh::loadObjModel(ID3D11Device* device, std::wstring fileName, bool isRigh
     Vertex tempVertex = {};
     //MeshData meshData;
     //Add all the vertex attributes into a Mesh Data Struct for tangent calculations. 
-    for (int j = 0; j < totalVertices; j++)
+    for (int j = 0; j < totalVertices; ++j)
     {
         tempVertex.pos = vertexPosition[vertexPositionIndex[j]];
         
@@ -1004,7 +1005,7 @@ bool Mesh::loadObjModel(ID3D11Device* device, std::wstring fileName, bool isRigh
 
         //Compute face normals
         //And Tangents
-        for (int i = 0; i < meshTriangles; i++)
+        for (int i = 0; i < meshTriangles; ++i)
         {
             //Get the vector describing one edge of our triangle (edge 0,2)
             vecX = vertices[indices[(i * 3)]].pos.x - vertices[indices[(i * 3) + 2]].pos.x; //indices används inte just nu så därför funkar det inte. 
@@ -1019,7 +1020,7 @@ bool Mesh::loadObjModel(ID3D11Device* device, std::wstring fileName, bool isRigh
             edge2 = DirectX::XMVectorSet(vecX, vecY, vecZ, 0.0f);    //Create our second edge
 
             //Cross multiply the two edge vectors to get the un-normalized face normal
-            XMStoreFloat3(&unnormalized, DirectX::XMVector3Cross(edge1, edge2));
+            DirectX::XMStoreFloat3(&unnormalized, DirectX::XMVector3Cross(edge1, edge2));
 
             tempNormal.push_back(unnormalized);
 
@@ -1046,10 +1047,10 @@ bool Mesh::loadObjModel(ID3D11Device* device, std::wstring fileName, bool isRigh
         float tX, tY, tZ;    //temp axis variables
 
         //Go through each vertex
-        for (int i = 0; i < totalVertices; i++)
+        for (int i = 0; i < totalVertices; ++i)
         {
             //Check which triangles use this vertex
-            for (int j = 0; j < meshTriangles; j++)
+            for (int j = 0; j < meshTriangles; ++j)
             {
                 if (indices[j * 3] == i ||
                     indices[(j * 3) + 1] == i ||
@@ -1205,12 +1206,9 @@ bool Mesh::drawObjModel(ID3D11DeviceContext* immediateContext, ID3D11Buffer*& pC
 
         immediateContext->UpdateSubresource(pConstantBuffer, 0, NULL, &objMats, 0, 0);
 
-
-
-        
-        //deferred.setRenderTargets(immediateContext);
-        immediateContext->Draw(totalVertices, 0);
+        immediateContext->DrawIndexedInstanced(indices.size(), 1, 0, 0, 0);
     }
+    
     return false;
 }
 

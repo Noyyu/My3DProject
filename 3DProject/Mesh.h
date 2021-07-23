@@ -72,6 +72,7 @@ private:
 
 	float time = 0;
 
+	std::vector<DWORD> indices; // DWORD https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-dtyp/262627d8-3418-4627-9218-4ffe110850b2
 	int totalVertices = 0;
 	int meshSubsets = 0;
 	bool hasNormalMap = false;
