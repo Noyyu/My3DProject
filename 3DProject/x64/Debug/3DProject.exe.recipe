@@ -19,6 +19,9 @@
       <FullPath>C:\Users\Nikki\source\repos\3DProject\3DProject\x64\Debug\PixelShader.cso</FullPath>
     </ContentFile>
     <ContentFile>
+      <FullPath>C:\Users\Nikki\source\repos\3DProject\3DProject\x64\Debug\ShadowVertexShader.cso</FullPath>
+    </ContentFile>
+    <ContentFile>
       <FullPath>C:\Users\Nikki\source\repos\3DProject\3DProject\x64\Debug\VertexShader.cso</FullPath>
     </ContentFile>
   </ContentFiles>

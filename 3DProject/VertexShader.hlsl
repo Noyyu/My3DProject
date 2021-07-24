@@ -9,7 +9,7 @@
 
 struct Matrixes
 {
-    float4x4 WorldViewProjection;
+    float4x4 WorldViewProjection; //Kameran Matrix
     float4x4 World;
     float time;
     int hasTexture;

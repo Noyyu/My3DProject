@@ -2,7 +2,7 @@
 Texture2D normalTexture : register(t0);
 Texture2D positionTexture : register(t1);
 Texture2D diffuseTexture : register(t2);
-Texture2D depthTexture : register(t3); //For shadow mapping
+Texture2D depthTexture : register(t3); //For shadow mapping //Denna funkar inte just nu. 
 SamplerState samplerThing : register(s0);
 
 struct PSInput
@@ -109,37 +109,37 @@ float4 main(in PSInput input) : sv_Target ////Skriver SV_OutputControlPointID ti
     
     //// Shadow calculations
     
-    //float4 positionL = mul(float4(position, 1.0f), lightViewProjectionMatrix);
-    //positionL.xy /= positionL.w; //ndc?
-    //float2 smTex = float2(0.5f * positionL.x + 0.5f, -0.5f * positionL.y + 0.5f);
-    //float depth = positionL.z / positionL.w;
-    //float bias = 0.001f;
+    float4 positionL = mul(float4(position, 1.0f), lightViewProjectionMatrix);
+    positionL.xy /= positionL.w; //ndc?
+    float2 smTex = float2(0.5f * positionL.x + 0.5f, -0.5f * positionL.y + 0.5f);
+    float depth = positionL.z / positionL.w;
+    float bias = 0.001f;
     
-    //float dx = 1.0f / 1920; // this must be the same as the texture size!!
-    //float dy = 1.0f / 1080; //ditto
+    float dx = 1.0f / 640; // this must be the same as the texture size!!
+    float dy = 1.0f / 480; //ditto
     
-    //// To prevent pixelation
-    //float s0 = (depthTexture.Sample(samplerThing, smTex + float2(0.0f, 0.0f)).r + bias < depth) ? 0.0f : 1.0f;
-    //float s1 = (depthTexture.Sample(samplerThing, smTex + float2(dx, 0.0f)).r + bias < depth) ? 0.0f : 1.0f;
-    //float s2 = (depthTexture.Sample(samplerThing, smTex + float2(0.0f, dy)).r + bias < depth) ? 0.0f : 1.0f;
-    //float s3 = (depthTexture.Sample(samplerThing, smTex + float2(dx, dy)).r + bias < depth) ? 0.0f : 1.0f;
+    // To prevent pixelation
+    float s0 = (depthTexture.Sample(samplerThing, smTex + float2(0.0f, 0.0f)).r + bias < depth) ? 0.0f : 1.0f;
+    float s1 = (depthTexture.Sample(samplerThing, smTex + float2(dx, 0.0f)).r + bias < depth) ? 0.0f : 1.0f;
+    float s2 = (depthTexture.Sample(samplerThing, smTex + float2(0.0f, dy)).r + bias < depth) ? 0.0f : 1.0f;
+    float s3 = (depthTexture.Sample(samplerThing, smTex + float2(dx, dy)).r + bias < depth) ? 0.0f : 1.0f;
     
-    //float2 texelPos = float2(smTex.x * dx, smTex.y * dy);
+    float2 texelPos = float2(smTex.x * dx, smTex.y * dy);
     
-    //float2 lerps = frac(texelPos);
+    float2 lerps = frac(texelPos);
     
-    //float shadowCoeff = lerp(lerp(s0, s1, lerps.x), lerp(s2, s3, lerps.x), lerps.y);
+    float shadowCoeff = lerp(lerp(s0, s1, lerps.x), lerp(s2, s3, lerps.x), lerps.y);
     
-    //finalColor = ((diffuse + specular) * albedo) * shadowCoeff;
+    finalColor = ((diffuse + specular) * albedo) * (shadowCoeff + 0.3);
     
     //--------------------
     
-    finalColor = (diffuse + specular) * albedo;
+    //finalColor = (diffuse + specular) * albedo;
     if (light.range < distance) //Denna funkar inte just nu av någon anledning. 
     {
         return (albedo * ambient);
     }
     
-    return float4(normals,1);
+    return float4(finalColor);
 
 }

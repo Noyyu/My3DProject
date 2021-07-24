@@ -427,7 +427,7 @@ int	CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 			);
 
 			//Draw shadow here maybe?
-			//shadowMap.shadowPass(&light, pShadowConstantBuffer, ShadowVertexShader, shadowInputLayout);
+			shadowMap.shadowPass(&light, pShadowConstantBuffer, ShadowVertexShader, shadowInputLayout);
 
 			lightPass
 			(
