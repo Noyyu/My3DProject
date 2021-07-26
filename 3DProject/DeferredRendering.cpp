@@ -206,18 +206,19 @@ ID3D11ShaderResourceView* Deferred::getShaderResourceView(int index)
 	}
 }
 
-void Deferred::setShaderResourceView(ID3D11DeviceContext* deviceContext)
+void Deferred::setShaderResourceView(ID3D11DeviceContext* deviceContext, ID3D11ShaderResourceView* shadowResourceView)
 {
-	ID3D11ShaderResourceView* targets[3] = { normalResourceView, positionResourceView, diffuseResourceView }; //Binds the textures from the geomatry pass to the light pass
+
+	ID3D11ShaderResourceView* targets[4] = { normalResourceView, positionResourceView, diffuseResourceView, shadowResourceView}; //Binds the textures from the geomatry pass to the light pass
 
 	// Bind the render target view array and depth stencil buffer to the output render pipeline.
-	deviceContext->PSSetShaderResources(0, 3, targets);
+	deviceContext->PSSetShaderResources(0, 4, targets);
 }
 
 void Deferred::unbindShaderResourceView(ID3D11DeviceContext* deviceContext)
 {
-	ID3D11ShaderResourceView* const kill[3] = { nullptr };
-	deviceContext->PSSetShaderResources(0, 3, kill);
+	ID3D11ShaderResourceView* const kill[4] = { nullptr };
+	deviceContext->PSSetShaderResources(0, 4, kill);
 
 }
 

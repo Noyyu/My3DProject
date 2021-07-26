@@ -9,13 +9,21 @@
 #include "HeightMap.h"
 #include "ShadowMap.h"
 
+//void drawShadowPass(ID3D11DeviceContext* immediateContext)
+//{
+//	UINT stride = sizeof(Vertex);
+//	UINT offset = 0;
+//
+//	immediateContext->IASetVertexBuffers
+//}
+
 //Sending everytihng to the immidiate context (device context) ((screen))
 void geomatryPass(ID3D11DeviceContext* immediateContext, ID3D11RenderTargetView* renderTargetView,
 	ID3D11DepthStencilView* depthView, D3D11_VIEWPORT& viewport, ID3D11VertexShader* vertexShader,
 	ID3D11PixelShader* pixelShader, ID3D11InputLayout* inputLayout, ID3D11Buffer* vertexBuffer,
 	ID3D11Buffer*& pConstantBuffer, ID3D11ShaderResourceView* textureSRV,
 	ID3D11SamplerState* sampler, ID3D11Buffer*& pPixelConstantBuffer, constantBufferMatrixes matrixes, 
-	Deferred deferred, Mesh& objObject, objMatrixes objMats, Camera* camera, Meshs testobject, Mesh& objObject2, ID3D11GeometryShader* geomatryShader, ID3D11InputLayout* geomatryInputLayout, Mesh& WaterMesh)
+	Deferred deferred, Mesh& objObject, Camera* camera, Meshs testobject, Mesh& objObject2, ID3D11GeometryShader* geomatryShader, ID3D11InputLayout* geomatryInputLayout, Mesh& WaterMesh)
 {
 
 	//immidiate context is the link or "adapter" to the hardwere. This is the thing that makes you see shit on the screen. 
@@ -57,22 +65,22 @@ void geomatryPass(ID3D11DeviceContext* immediateContext, ID3D11RenderTargetView*
 	immediateContext->Draw(6, 0);
 
 	//Test object
-	immediateContext->IASetIndexBuffer(testobject.ib.Get(), DXGI_FORMAT_R32_UINT, 0);
-	immediateContext->IASetVertexBuffers(0, 1, testobject.vb.GetAddressOf(), &stride, &offset);
-	immediateContext->Draw(testobject.ib.getIndexCount(), 0);
+	//immediateContext->IASetIndexBuffer(testobject.ib.Get(), DXGI_FORMAT_R32_UINT, 0);
+	//immediateContext->IASetVertexBuffers(0, 1, testobject.vb.GetAddressOf(), &stride, &offset);
+	//immediateContext->Draw(testobject.ib.getIndexCount(), 0);
 
 	
-
 	objObject.drawObjModel(immediateContext, pConstantBuffer, deferred, vertexShader, pixelShader, sampler, pPixelConstantBuffer, camera);
 	objObject2.drawObjModel(immediateContext, pConstantBuffer, deferred, vertexShader, pixelShader, sampler, pPixelConstantBuffer, camera);
 	WaterMesh.drawObjModel(immediateContext, pConstantBuffer, deferred, vertexShader, pixelShader, sampler, pPixelConstantBuffer, camera);
+
 }
 
 void lightPass(ID3D11DeviceContext* immediateContext, ID3D11RenderTargetView* renderTargetView,
 	ID3D11DepthStencilView* depthView, D3D11_VIEWPORT& viewport, ID3D11VertexShader* lightPassVertexShader,
 	ID3D11PixelShader* lightPassPixelShader, ID3D11InputLayout* inputLayout, ID3D11Buffer* fullScreenVertexBuffer,
 	ID3D11Buffer*& pConstantBuffer, ID3D11ShaderResourceView* textureSRV,
-	ID3D11SamplerState* sampler, ID3D11Buffer*& pPixelConstantBuffer, constantBufferMatrixes matrixes, Deferred& deferred, Light light, Mesh &objObject, objMatrixes objMats)
+	ID3D11SamplerState* sampler, ID3D11Buffer*& pPixelConstantBuffer, constantBufferMatrixes matrixes, Deferred& deferred, Light light, Mesh &objObject, ShadowMap shadowObject)
 {
 	
 	float clearColor[4] = { 1,1,1,1 };
@@ -89,7 +97,7 @@ void lightPass(ID3D11DeviceContext* immediateContext, ID3D11RenderTargetView* re
 
 	immediateContext->VSSetShader(lightPassVertexShader, nullptr, 0);
 	immediateContext->GSSetShader(nullptr, nullptr, 0);
-	deferred.setShaderResourceView(immediateContext);
+	deferred.setShaderResourceView(immediateContext, shadowObject.depthMap.shaderResourceView.Get());
 	immediateContext->PSSetShader(lightPassPixelShader, nullptr, 0);
 
 	immediateContext->UpdateSubresource(pPixelConstantBuffer, 0, NULL, &light, 0, 0);
@@ -159,7 +167,7 @@ int	CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 	ID3D11InputLayout*       inputLayout         = nullptr;
 	ID3D11InputLayout*		 shadowInputLayout   = nullptr;
 	ID3D11InputLayout*       geomatryInputLayout = nullptr;  // Back face culling
-	ID3D11Buffer*            vertexBuffer        = nullptr;
+	ID3D11Buffer*            vertexBuffer        = nullptr;  // For the spinning quad
 	D3D11_VIEWPORT           viewPort;
 	std::string              vertexShaderByteCode;
 	std::string              vertexShadowShaderByteCode;       // Shadow map
@@ -192,6 +200,7 @@ int	CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 	constantBufferMatrixes matrixes;//used to send the world matrix and worldviewprojection matrixes to the shader later for 
 	DirectX::XMMATRIX WorldViewProjection = DirectX::XMMatrixIdentity();
 	DirectX::XMMATRIX World = DirectX::XMMatrixIdentity();
+	World = DirectX::XMMatrixTranslation(0.0f, 5.0f, 0.0f);
 	matrixes.hasNormal  = false;
 	matrixes.hasTexture = true;
 	matrixFunctions matrixFunction;
@@ -201,12 +210,12 @@ int	CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 	//-----------------------------------------------------------------//
 	//I'll use this as my shadow light. 
 	Light light;
-	light.position       = DirectX::XMFLOAT4(0.0f, 5.0f, 5.0f, 1.0f); // X+ = >, Z+ = ^
+	light.position       = DirectX::XMFLOAT4(0.0f, 10.0f, 5.0f, 1.0f); // X+ = >, Z+ = ^
 	light.attenuation    = DirectX::XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f);
 	light.ambient        = DirectX::XMFLOAT4(0.2f, 0.2f, 0.2f, 1.0f);
 	light.diffuse        = DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
 	light.cameraPosition = DirectX::XMFLOAT4(DirectX::XMVectorGetX(walkingCamera->getCameraPos()), DirectX::XMVectorGetY(walkingCamera->getCameraPos()), DirectX::XMVectorGetZ(walkingCamera->getCameraPos()), 1.0f);
-	light.direction      = DirectX::XMFLOAT4(1.0f, 0.0f, 0.0f, 0.0f);
+	light.direction      = DirectX::XMFLOAT4(1.0f, -0.5f, 1.0f, 0.0f);
 	light.range = 100.0f;
 
 
@@ -287,13 +296,13 @@ int	CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 	// OBJ Matrixes
 	//-----------------------------------------------------------------//
 
-	objMatrixes objMatrixes = {}; //Jag tror inte detta behövs
-	objMatrixes.objRotation = DirectX::XMMatrixRotationY(3.14f);
-	objMatrixes.objScale = DirectX::XMMatrixScaling(1.0f, 1.0f, 1.0f);
-	objMatrixes.objTranslation = DirectX::XMMatrixTranslation(0.0f, 0.0f, 0.0f);
-	objMatrixes.cameraPosition = DirectX::XMMatrixIdentity();
-	objMatrixes.cameraProjection = DirectX::XMMatrixIdentity();
-	objMatrixes.cameraView = DirectX::XMMatrixIdentity();
+	//objMatrixes objMatrixes = {}; //Jag tror inte detta behövs
+	//objMatrixes.objRotation = DirectX::XMMatrixRotationY(3.14f);
+	//objMatrixes.objScale = DirectX::XMMatrixScaling(1.0f, 1.0f, 1.0f);
+	//objMatrixes.objTranslation = DirectX::XMMatrixTranslation(0.0f, 5.0f, 0.0f);
+	//objMatrixes.cameraPosition = DirectX::XMMatrixIdentity();
+	//objMatrixes.cameraProjection = DirectX::XMMatrixIdentity();
+	//objMatrixes.cameraView = DirectX::XMMatrixIdentity();
 
 
 	//-----------------------------------------------------------------//
@@ -301,8 +310,8 @@ int	CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 	//-----------------------------------------------------------------//
 
 	ID3D11SamplerState* objSampler;
-	Mesh objObject(pDevice); 
-	Mesh objObject2(pDevice);
+	Mesh heightPlaneMesh(pDevice); 
+	Mesh houseMesh(pDevice);
 	Mesh WaterMesh(pDevice);
 	Meshs testObject;//Remove basic import
 
@@ -312,11 +321,11 @@ int	CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 	std::wstring filePath = L"Objects/";
 	
 
-	objObject.setFilePath(filePath);
-	objObject2.setFilePath(filePath);
+	heightPlaneMesh.setFilePath(filePath);
+	houseMesh.setFilePath(filePath);
 	WaterMesh.setFilePath(filePath);
-	objObject.loadObjModel(pDevice, fileName2, false, true);
-	objObject2.loadObjModel(pDevice, fileName, false, true); //False = normalerna hamnar på fel håll men specular funkar??
+	heightPlaneMesh.loadObjModel(pDevice, fileName2, false, true);
+	houseMesh.loadObjModel(pDevice, fileName, false, true); //False = normalerna hamnar på fel håll men specular funkar??
 	WaterMesh.loadObjModel(pDevice, waterMeshPath, false, true);
 
 	WaterMesh.Animation(true);
@@ -377,14 +386,15 @@ int	CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 			
 
 			light.cameraPosition = DirectX::XMFLOAT4(DirectX::XMVectorGetX(walkingCamera->getCameraPos()), DirectX::XMVectorGetY(walkingCamera->getCameraPos()), DirectX::XMVectorGetZ(walkingCamera->getCameraPos()), 1.0f);
-			//light.updateCameraPosition(DirectX::XMFLOAT4(DirectX::XMVectorGetX(walkingCamera->getCameraPos()), DirectX::XMVectorGetY(walkingCamera->getCameraPos()), DirectX::XMVectorGetZ(walkingCamera->getCameraPos()),1.0f));
 
 			walkingCamera->moveCameraWithInput();
 
 			auto start = timer.now();
 
 			//Matrix and time stuff
-			rotationMatrix = translation * DirectX::XMMatrixRotationY(currentRotation * deltaTime) * translation2;
+			//rotationMatrix = translation * DirectX::XMMatrixRotationY(currentRotation * deltaTime) * translation2;
+
+			//rotationMatrix = DirectX::XMMatrixTranslation(0.0f, 0.01f, 0.0f);
 
 			World = rotationMatrix * World;
 			WorldViewProjection = World * walkingCamera->getCameraView() * walkingCamera->getCameraProjection();
@@ -399,6 +409,11 @@ int	CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 			//-----------------------------------------------------------------//
 			// Geomatry pass and Light pass Update
 			//-----------------------------------------------------------------//
+
+
+
+			//houseMesh.DrawShadow(immediateContext, walkingCamera, pConstantBuffer);
+			//WaterMesh.DrawShadow(immediateContext, walkingCamera, pConstantBuffer);
 
 			geomatryPass
 			(
@@ -416,18 +431,16 @@ int	CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 				pPixelConstantBuffer,
 				matrixes,
 				deffered,
-				objObject,
-				objMatrixes, 
+				heightPlaneMesh,
 				walkingCamera,
 				testObject,
-				objObject2,
+				houseMesh,
 				geomatryShader,
 				geomatryInputLayout,
 				WaterMesh
 			);
 
-			//Draw shadow here maybe?
-			shadowMap.shadowPass(&light, pShadowConstantBuffer, ShadowVertexShader, shadowInputLayout);
+
 
 			lightPass
 			(
@@ -446,11 +459,13 @@ int	CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 				matrixes,
 				deffered,
 				light,
-				objObject,
-				objMatrixes
+				heightPlaneMesh,
+				shadowMap
 			);
 			
-
+			//Draw shadow here maybe?
+			shadowMap.shadowPass(&light, pShadowConstantBuffer, ShadowVertexShader, shadowInputLayout);
+			heightPlaneMesh.DrawShadow(immediateContext, walkingCamera, pConstantBuffer);
 			//Shows the front buffer
 			pSwapChain->Present(1, 0);
 

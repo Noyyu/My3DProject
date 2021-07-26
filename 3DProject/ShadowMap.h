@@ -1,6 +1,7 @@
 #pragma once
 #include "Structs.h"
 #include "Window.h"
+#include "Camera.h"
 
 
 class ShadowMap
@@ -17,7 +18,7 @@ private:
 	DirectX::XMFLOAT4X4 lightViewProjectionMatrix;
 	DirectX::XMMATRIX lightProjectionMatrix;
 	DirectX::XMMATRIX lightViewMatrix;
-	
+
 	
 	bool CreateShadowMap();
 	bool CreateInputLayoutSM(ID3D11InputLayout*& inputLayoutSM, std::string& vertexShaderByteCode);

@@ -5,14 +5,10 @@
 
 
 Mesh::Mesh(ID3D11Device* pDevice)
-    :model(nullptr), perObjectConstantBuffer(std::make_unique<ConstantBuffer>(pDevice, sizeof(constantBufferMatrixes)))
+
 {
 }
 
-std::vector<DirectX::XMFLOAT3> Mesh::getModelVertecies()
-{
-    return this->vertexPosition;
-}
 
 void Mesh::setFilePath(std::wstring filePath)
 {
@@ -1154,7 +1150,7 @@ bool Mesh::loadObjModel(ID3D11Device* device, std::wstring fileName, bool isRigh
 }
 
 
-bool Mesh::drawObjModel(ID3D11DeviceContext* immediateContext, ID3D11Buffer*& pConstantBuffer, Deferred deferred,
+void Mesh::drawObjModel(ID3D11DeviceContext* immediateContext, ID3D11Buffer*& pConstantBuffer, Deferred deferred,
     ID3D11VertexShader* vertexShader, ID3D11PixelShader* pixelShader, ID3D11SamplerState* sampler, ID3D11Buffer*& pPixelConstantBuffer, Camera* camera)
 {
     for (int i = 0; i < meshSubsets; i++)
@@ -1208,8 +1204,32 @@ bool Mesh::drawObjModel(ID3D11DeviceContext* immediateContext, ID3D11Buffer*& pC
 
         immediateContext->DrawIndexedInstanced(indices.size(), 1, 0, 0, 0);
     }
-    
-    return false;
+}
+
+void Mesh::DrawShadow(ID3D11DeviceContext* immediateContext, Camera* camera, ID3D11Buffer*& pConstantBuffer)
+{
+    for (int i = 0; i < meshSubsets; i++)
+    {
+        static UINT stride = sizeof(Vertex);
+        static UINT offset = 0;
+
+        immediateContext->IASetIndexBuffer(meshIndexBuffer, DXGI_FORMAT_R32_UINT, 0);
+        immediateContext->IASetVertexBuffers(0, 1, &meshVertexBuffer, &stride, &offset);
+
+        DirectX::XMMATRIX scale = DirectX::XMMatrixScaling(1, 1, 1);
+        DirectX::XMMATRIX translate = DirectX::XMMatrixTranslation(0, 0, 0); // X+ = >, Z+ = ^
+        DirectX::XMMATRIX world = scale * translate;
+
+        this->objMats.World = matrixFunction.setWorld(world);
+        //this->objMats.WorldViewProjection = matrixFunction.setWVP(world * camera->getCameraView() * camera->getCameraProjection());
+
+        immediateContext->UpdateSubresource(pConstantBuffer, 0, NULL, &objMats, 0, 0);
+        immediateContext->VSSetConstantBuffers(1, 1, &pConstantBuffer);
+
+        immediateContext->DrawIndexedInstanced(indices.size(), 1, 0, 0, 0);
+    }
+
+
 }
 
 //bool Mesh::drawOBJModelV2(ID3D11DeviceContext* immediateContext)
