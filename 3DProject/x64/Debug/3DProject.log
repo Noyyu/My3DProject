@@ -1,2 +1,17 @@
 ﻿C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\MSBuild\Microsoft\VC\v160\Microsoft.CppBuild.targets(499,5): warning MSB8004: Output Directory does not end with a trailing slash.  This build instance will add the slash as it is required to allow proper evaluation of the Output Directory.
+  Mesh.cpp
+C:\Users\Nikki\source\repos\3DProject\3DProject\Mesh.cpp(164,28): warning C4553: '==': result of expression not used; did you intend '='?
+C:\Users\Nikki\source\repos\3DProject\3DProject\Mesh.cpp(555,40): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\Nikki\source\repos\3DProject\3DProject\Mesh.cpp(743,118): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\Nikki\source\repos\3DProject\3DProject\Mesh.cpp(874,110): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\Nikki\source\repos\3DProject\3DProject\Mesh.cpp(1079,41): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+C:\Users\Nikki\source\repos\3DProject\3DProject\Mesh.cpp(1080,43): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+C:\Users\Nikki\source\repos\3DProject\3DProject\Mesh.cpp(1084,41): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+C:\Users\Nikki\source\repos\3DProject\3DProject\Mesh.cpp(1085,43): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+C:\Users\Nikki\source\repos\3DProject\3DProject\Mesh.cpp(58,23): warning C4101: 'faces': unreferenced local variable
+C:\Users\Nikki\source\repos\3DProject\3DProject\Mesh.cpp(696,63): warning C4101: 'tempMeshShaderResourceView': unreferenced local variable
+C:\Users\Nikki\source\repos\3DProject\3DProject\Mesh.cpp(822,55): warning C4101: 'tempMeshShaderResourceView': unreferenced local variable
+C:\Users\Nikki\source\repos\3DProject\3DProject\Mesh.cpp(1191,39): warning C4805: '==': unsafe mix of type 'int' and type 'bool' in operation
+C:\Users\Nikki\source\repos\3DProject\3DProject\Mesh.cpp(1198,41): warning C4805: '==': unsafe mix of type 'int' and type 'bool' in operation
+C:\Users\Nikki\source\repos\3DProject\3DProject\Mesh.cpp(1209,74): warning C4267: 'argument': conversion from 'size_t' to 'UINT', possible loss of data
   3DProject.vcxproj -> C:\Users\Nikki\source\repos\3DProject\3DProject\x64\Debug\3DProject.exe

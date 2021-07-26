@@ -139,7 +139,7 @@ bool Mesh::loadObjModel(ID3D11Device* device, std::wstring fileName, bool isRigh
                 }
                 else
                 {
-                    vertexTextureCoordinates.push_back(DirectX::XMFLOAT2(vtcu, vtcv));
+                    vertexTextureCoordinates.push_back(DirectX::XMFLOAT2(vtcu, 1.0f - vtcv));
                 }
 
                 hasTextureCoordinates = true;

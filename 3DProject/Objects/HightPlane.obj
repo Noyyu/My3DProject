@@ -33030,7 +33030,7 @@ vn 0.000000 1.000000 0.000000
 vn 0.000000 1.000000 0.000000
 s off
 g HightPlane:Mesh
-usemtl HightPlane:initialShadingGroup
+usemtl lambert2SG
 f 1/1/1 2/2/2 3/3/3
 f 3/3/4 2/2/5 4/4/6
 f 2/2/7 5/5/8 4/4/9
