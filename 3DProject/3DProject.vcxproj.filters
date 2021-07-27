@@ -51,9 +51,6 @@
     <ClInclude Include="ConstantBuffer.h">
       <Filter>Buffers</Filter>
     </ClInclude>
-    <ClInclude Include="BasicLoader.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="HeightMap.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -88,9 +85,6 @@
     </ClCompile>
     <ClCompile Include="ConstantBuffer.cpp">
       <Filter>Buffers</Filter>
-    </ClCompile>
-    <ClCompile Include="BasicLoader.cpp">
-      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="HeightMap.cpp">
       <Filter>Source Files</Filter>

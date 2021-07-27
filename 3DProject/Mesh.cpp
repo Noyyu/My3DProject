@@ -1216,11 +1216,11 @@ void Mesh::DrawShadow(ID3D11DeviceContext* immediateContext, Camera* camera, ID3
         immediateContext->IASetIndexBuffer(meshIndexBuffer, DXGI_FORMAT_R32_UINT, 0);
         immediateContext->IASetVertexBuffers(0, 1, &meshVertexBuffer, &stride, &offset);
 
-        DirectX::XMMATRIX scale = DirectX::XMMatrixScaling(1, 1, 1);
-        DirectX::XMMATRIX translate = DirectX::XMMatrixTranslation(0, 0, 0); // X+ = >, Z+ = ^
-        DirectX::XMMATRIX world = scale * translate;
+        //DirectX::XMMATRIX scale = DirectX::XMMatrixScaling(1, 1, 1);
+        //DirectX::XMMATRIX translate = DirectX::XMMatrixTranslation(0, 0, 0); // X+ = >, Z+ = ^
+        //DirectX::XMMATRIX world = scale * translate;
 
-        this->objMats.World = matrixFunction.setWorld(world);
+        //this->objMats.World = matrixFunction.setWorld(world);
         //this->objMats.WorldViewProjection = matrixFunction.setWVP(world * camera->getCameraView() * camera->getCameraProjection());
 
         immediateContext->UpdateSubresource(pConstantBuffer, 0, NULL, &objMats, 0, 0);
@@ -1231,37 +1231,6 @@ void Mesh::DrawShadow(ID3D11DeviceContext* immediateContext, Camera* camera, ID3
 
 
 }
-
-//bool Mesh::drawOBJModelV2(ID3D11DeviceContext* immediateContext)
-//{
-//    if (this->model != nullptr)
-//    {
-//        ID3D11ShaderResourceView* SRV = nullptr;
-//
-//        immediateContext->PSSetShaderResources(0, 1, &SRV);
-//        immediateContext->PSSetShaderResources(1, 1, &SRV);
-//
-//        static UINT stride = sizeof(Vertex);
-//        static UINT offset = 0;
-//
-//        immediateContext->IASetVertexBuffers(0, 1, this->model->mesh->vertexBuffer.GetAddressOf(), &stride, &offset);
-//        immediateContext->IASetIndexBuffer(this->model->mesh->indexBuffer.Get(), DXGI_FORMAT_R32_UINT, 0);
-//
-//        DirectX::XMMATRIX scale = DirectX::XMMatrixScaling(1, 1, 1);
-//        DirectX::XMMATRIX translate = DirectX::XMMatrixTranslation(0, 0, 0);
-//        DirectX::XMMATRIX world = scale * translate;
-//
-//        this->objMats.setWorld(world);
-//        this->objMats.setWVP(world * camera->getCameraView() * camera->getCameraProjection());
-//        
-//       
-//        //----------
-//
-//        immediateContext->VSSetConstantBuffers(0, 1, this->perObjectConstantBuffer->GetAddressOf());
-//        immediateContext->DrawIndexed(this->model->mesh->indexBuffer.getIndexCount(), 0, 0);
-//    }
-//    return false;
-//}
 
 void Mesh::shutDownMesh()
 {

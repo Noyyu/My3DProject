@@ -65,7 +65,7 @@ VertexShaderOutput main(VertexShaderInput input)
     output.normal = mul(float4(input.normal, 1), matrixes.World); //Converts normal to world space
     
     //New output
-    output.worldPosition = mul(input.position, matrixes.World); //Konverts worldposition to world space
+    output.worldPosition = mul(input.position, matrixes.World); //Converts worldposition to world space
     output.tangentWS = normalize(tangentWS - dot(tangentWS, normalWS) * normalWS);
     output.biTangentWS = float4(normalize(cross(normalWS.xyz, tangentWS.xyz)), 0.0f);
     

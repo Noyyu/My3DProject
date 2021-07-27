@@ -39,8 +39,8 @@ void ShadowMap::SetProjectionMatrix(Light* light, ID3D11Buffer*& pShadowConstant
 
 	DirectX::XMVECTOR position = { light->position.x, light->position.y, light->position.z, 1.0f };
 
-	sm::Vector4 lightDirection = this->lightDirection;
-	sm::Vector4 lightPosition = DirectX::XMFLOAT4{light->position.x, light->position.y , light->position.z,  1.0f};
+	sm::Vector4 lightDirection = light->direction;
+	sm::Vector4 lightPosition  = light->position;
 	sm::Vector4 target = lightPosition + lightDirection;
 
 	// Set view matrix
@@ -119,11 +119,6 @@ bool ShadowMap::CreateShadowMap()
 
 
 
-
-
-
-
-
 void ShadowMap::shadowPass(Light* light, ID3D11Buffer*& pShadowConstantBuffer, ID3D11VertexShader* vertexShader, ID3D11InputLayout*& inputLayoutSM)
 {
 	ID3D11RenderTargetView* nullRTV[] = { nullptr };
@@ -140,8 +135,6 @@ void ShadowMap::shadowPass(Light* light, ID3D11Buffer*& pShadowConstantBuffer, I
 	this->deviceContext->VSSetShader(vertexShader, nullptr, 0);
 	this->deviceContext->PSSetShader(nullptr, nullptr, 0);
 }
-
-
 
 
 bool ShadowMap::CreateInputLayoutSM(ID3D11InputLayout*& inputLayoutSM, std::string& vertexShaderByteCode)
