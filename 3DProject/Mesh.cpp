@@ -1174,6 +1174,7 @@ void Mesh::drawObjModel(ID3D11DeviceContext* immediateContext, ID3D11Buffer*& pC
         this->objMats.animated = this->animation;
 
         immediateContext->VSSetConstantBuffers(0, 1, &pConstantBuffer);
+        //immediateContext->VSSetConstantBuffers(1,1,&)
         
         immediateContext->VSSetShader(vertexShader, nullptr, 0);
         immediateContext->PSSetShader(pixelShader, nullptr, 0);
@@ -1230,6 +1231,29 @@ void Mesh::DrawShadow(ID3D11DeviceContext* immediateContext, Camera* camera, ID3
     }
 
 
+}
+
+void Mesh::createObjectConstantBuffer(ID3D11Device* device)
+{
+    //Information about D3D11_BUFFER_DESC https://docs.microsoft.com/en-us/windows/win32/api/d3d11/ns-d3d11-d3d11_buffer_desc
+    D3D11_BUFFER_DESC constantBufferDesc = {};
+    constantBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+    constantBufferDesc.Usage = D3D11_USAGE_DEFAULT; //requiers read and write acces to the CPU
+    constantBufferDesc.CPUAccessFlags = 0;
+    constantBufferDesc.ByteWidth = sizeof(this->objMats);
+    constantBufferDesc.StructureByteStride = 0u;
+    D3D11_SUBRESOURCE_DATA constantSubresourceData = {};
+    constantSubresourceData.pSysMem = &this->objMats;
+
+    constantBufferDesc.MiscFlags = 0;
+    constantSubresourceData.SysMemPitch = 0;
+    constantSubresourceData.SysMemSlicePitch = 0;
+
+    HRESULT hr = device->CreateBuffer(&constantBufferDesc, &constantSubresourceData, std::addressof(this->objConstantBuffer));
+    if (FAILED(hr))
+    {
+        std::cout << "Failed to create constant buffer" << std::endl;
+    }
 }
 
 void Mesh::shutDownMesh()

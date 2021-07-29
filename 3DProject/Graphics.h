@@ -13,7 +13,7 @@ public:
 		ID3D11Texture2D*& texture, ID3D11ShaderResourceView*& textureSRV, ID3D11SamplerState*& sampler, Light& light, ID3D11Buffer*& pPixelConstantBuffer,
 		constantBufferMatrixes matrixes, ID3D11Buffer*& FullScreenVertexBuffer, ID3D11VertexShader*& finalPassVertexShader, ID3D11PixelShader*& finalPassPixelShader,
 		ID3D11InputLayout*& lightPassInputLayout, std::string& lightPassVertexShaderByteCode, ID3D11RasterizerState*& rasState, ID3D11RasterizerState*& rasStateNoCulling, 
-		ID3D11GeometryShader*& geomatryShader, ID3D11InputLayout*& geomatryInputLayout);
+		ID3D11GeometryShader*& geomatryShader, ID3D11InputLayout*& geomatryInputLayout, ID3D11Buffer*& pPerFrameConstantBuffer, PerFrameMatrixes perFrameStruct);
 
 	bool createInterface(UINT width, UINT height, HWND windowHandle, IDXGISwapChain*& pSwapChain, ID3D11Device*& pDevice, ID3D11DeviceContext*& immediateContext);
 	bool createRenderTargetView(IDXGISwapChain*& pSwapChain, ID3D11Device* pDevice, ID3D11RenderTargetView*& renderTargetView);
@@ -29,4 +29,5 @@ public:
 	bool loadLightPassShaders(ID3D11Device* device, std::string& lightPassVertexShaderByteCode, ID3D11VertexShader*& finalPassVertexShader, ID3D11PixelShader*& finalPassPixelShader);
 	bool loadShaderData(const std::string& filename, std::string& shaderByteCode);
 	bool createRasterizerStates(ID3D11Device* device, ID3D11RasterizerState* rasState, ID3D11RasterizerState* rasStateNoCulling, ID3D11DeviceContext*& immediateContext);
+	bool createPerFrameBuffer(ID3D11Device* pDevice, ID3D11Buffer*& pPerFrameConstantBuffer, PerFrameMatrixes perFrameStruct);
 };

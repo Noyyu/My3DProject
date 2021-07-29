@@ -51,6 +51,8 @@ public:
 
 	void DrawShadow(ID3D11DeviceContext* immediateContext, Camera* camera, ID3D11Buffer*& pConstantBuffer);
 
+	void createObjectConstantBuffer(ID3D11Device* device);
+
 	//Create a draw shadow function here maybe. 
 	void shutDownMesh();
 	void Animation(bool animation);

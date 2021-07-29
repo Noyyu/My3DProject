@@ -9,6 +9,14 @@
 #include "HeightMap.h"
 #include "ShadowMap.h"
 
+void setPerFrameMatrixes(PerFrameMatrixes& object, Camera* camera, ID3D11DeviceContext* immediateContext, ID3D11Buffer*& perFrameConstantBuffer)
+{
+	DirectX::XMStoreFloat4(&object.CameraPosition, camera->getCameraPos());
+	DirectX::XMStoreFloat4x4(&object.ViewMatrix, camera->getCameraView());
+	DirectX::XMStoreFloat4x4(&object.ProjectionMatrix, camera->getCameraProjection());
+
+	immediateContext->UpdateSubresource(perFrameConstantBuffer, 0, nullptr, &object, 0, 0);
+}
 
 //Sending everytihng to the immidiate context (device context) ((screen))
 void geomatryPass(ID3D11DeviceContext* immediateContext, ID3D11RenderTargetView* renderTargetView,
@@ -16,7 +24,7 @@ void geomatryPass(ID3D11DeviceContext* immediateContext, ID3D11RenderTargetView*
 	ID3D11PixelShader* pixelShader, ID3D11InputLayout* inputLayout, ID3D11Buffer* vertexBuffer,
 	ID3D11Buffer*& pConstantBuffer, ID3D11ShaderResourceView* textureSRV,
 	ID3D11SamplerState* sampler, ID3D11Buffer*& pPixelConstantBuffer, constantBufferMatrixes matrixes, 
-	Deferred deferred, Mesh& objObject, Camera* camera, Mesh& objObject2, ID3D11GeometryShader* geomatryShader, ID3D11InputLayout* geomatryInputLayout, Mesh& WaterMesh, Mesh& cubeMesh)
+	Deferred deferred, Mesh& objObject, Camera* camera, Mesh& objObject2, ID3D11GeometryShader* geomatryShader, ID3D11InputLayout* geomatryInputLayout, Mesh& WaterMesh, Mesh& cubeMesh, ID3D11Buffer*& perFrameConstantBuffer)
 {
 
 	//immidiate context is the link or "adapter" to the hardwere. This is the thing that makes you see shit on the screen. 
@@ -49,10 +57,10 @@ void geomatryPass(ID3D11DeviceContext* immediateContext, ID3D11RenderTargetView*
 	deferred.setRenderTargets(immediateContext);
 	//immediateContext->Draw(6, 0);
 
-	objObject.drawObjModel(immediateContext, pConstantBuffer, deferred, vertexShader, pixelShader, sampler, pPixelConstantBuffer, camera);
-	objObject2.drawObjModel(immediateContext, pConstantBuffer, deferred, vertexShader, pixelShader, sampler, pPixelConstantBuffer, camera);
-	WaterMesh.drawObjModel(immediateContext, pConstantBuffer, deferred, vertexShader, pixelShader, sampler, pPixelConstantBuffer, camera);
-	cubeMesh.drawObjModel(immediateContext, pConstantBuffer, deferred, vertexShader, pixelShader, sampler, pPixelConstantBuffer, camera);
+	objObject.drawObjModel(immediateContext, perFrameConstantBuffer, deferred, vertexShader, pixelShader, sampler, pPixelConstantBuffer, camera);
+	objObject2.drawObjModel(immediateContext, perFrameConstantBuffer, deferred, vertexShader, pixelShader, sampler, pPixelConstantBuffer, camera);
+	WaterMesh.drawObjModel(immediateContext, perFrameConstantBuffer, deferred, vertexShader, pixelShader, sampler, pPixelConstantBuffer, camera);
+	cubeMesh.drawObjModel(immediateContext, perFrameConstantBuffer, deferred, vertexShader, pixelShader, sampler, pPixelConstantBuffer, camera);
 
 }
 
@@ -60,7 +68,7 @@ void lightPass(ID3D11DeviceContext* immediateContext, ID3D11RenderTargetView* re
 	ID3D11DepthStencilView* depthView, D3D11_VIEWPORT& viewport, ID3D11VertexShader* lightPassVertexShader,
 	ID3D11PixelShader* lightPassPixelShader, ID3D11InputLayout* inputLayout, ID3D11Buffer* fullScreenVertexBuffer,
 	ID3D11Buffer*& pConstantBuffer, ID3D11ShaderResourceView* textureSRV,
-	ID3D11SamplerState* sampler, ID3D11Buffer*& pPixelConstantBuffer, constantBufferMatrixes matrixes, Deferred& deferred, Light light, Mesh &objObject, ShadowMap shadowObject, Camera* camera)
+	ID3D11SamplerState* sampler, ID3D11Buffer*& pPixelConstantBuffer, constantBufferMatrixes matrixes, Deferred& deferred, Light light, Mesh &objObject, ShadowMap shadowObject, Camera* camera, ID3D11Buffer*& perFrameConstantBuffer, ID3D11Buffer*& pShadowConstantBuffer)
 {
 	matrixFunctions matrixFunction;
 	float clearColor[4] = { 1,1,1,1 };
@@ -94,8 +102,9 @@ void lightPass(ID3D11DeviceContext* immediateContext, ID3D11RenderTargetView* re
 	immediateContext->UpdateSubresource(pConstantBuffer, 0, NULL, &matrixes, 0, 0);
 
 	immediateContext->VSSetConstantBuffers(0u, 1, &pConstantBuffer);
-	immediateContext->PSSetConstantBuffers(0u, 1, &pPixelConstantBuffer);
-	immediateContext->PSSetConstantBuffers(1u, 1, &pConstantBuffer);
+	immediateContext->PSSetConstantBuffers(0u, 1, &pPixelConstantBuffer);   // B0
+	immediateContext->PSSetConstantBuffers(1u, 1, &pShadowConstantBuffer);  // B1
+	immediateContext->PSSetConstantBuffers(2u, 1, &perFrameConstantBuffer); // B2
 
 	
 	immediateContext->Draw(6, 0);
@@ -165,6 +174,7 @@ int	CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 	ID3D11Buffer*            pPixelConstantBuffer   = nullptr;
 	ID3D11Buffer*            fullScreenVertexBuffer = nullptr; // Fullscreen quad
 	ID3D11Buffer*			 pShadowConstantBuffer  = nullptr; // Shadow map
+	ID3D11Buffer*            pPerFrameConstantBuffer = nullptr;
 
 	//Texture
 	ID3D11Texture2D*          texture                   = nullptr;
@@ -195,6 +205,12 @@ int	CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 	matrixes.hasTexture = true;
 	matrixFunctions matrixFunction;
 
+	//per frame matrix stuff
+	PerFrameMatrixes perframeMatrixes;
+	perframeMatrixes.CameraPosition   = DirectX::XMFLOAT4(DirectX::XMVectorGetX(walkingCamera->getCameraPos()), DirectX::XMVectorGetY(walkingCamera->getCameraPos()), DirectX::XMVectorGetZ(walkingCamera->getCameraPos()), 1.0f);
+	perframeMatrixes.ProjectionMatrix = {};
+	perframeMatrixes.ViewMatrix       = {};
+
 	//-----------------------------------------------------------------//
 	// Light attributes
 	//-----------------------------------------------------------------//
@@ -205,7 +221,7 @@ int	CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 	light.ambient        = DirectX::XMFLOAT4(0.2f, 0.2f, 0.2f, 1.0f);
 	light.diffuse        = DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
 	light.cameraPosition = DirectX::XMFLOAT4(DirectX::XMVectorGetX(walkingCamera->getCameraPos()), DirectX::XMVectorGetY(walkingCamera->getCameraPos()), DirectX::XMVectorGetZ(walkingCamera->getCameraPos()), 1.0f);
-	light.direction      = DirectX::XMFLOAT4(1.0f, -1.0f, 1.0f, 0.0f);
+	light.direction      = DirectX::XMFLOAT4(0.0f, -1.0f, 0.0f, 0.0f);
 	light.range = 100.0f;
 
 
@@ -261,7 +277,9 @@ int	CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 		rasState,
 		rasStateNoCulling,
 		geomatryShader,
-		geomatryInputLayout
+		geomatryInputLayout,
+		pPerFrameConstantBuffer, 
+		perframeMatrixes
 
 	);
 
@@ -365,13 +383,14 @@ int	CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 			// Update Camera Y Position in respect to Height Map
 			//-----------------------------------------------------------------//
 
+			setPerFrameMatrixes(perframeMatrixes, walkingCamera, immediateContext, pPerFrameConstantBuffer);
+
 			float x = DirectX::XMVectorGetX(walkingCamera->getCameraPos());
 			float y = walkingCamera->getGameraYPos();
 			float z = DirectX::XMVectorGetZ(walkingCamera->getCameraPos());
 			float newY = heightMap.getHegihtOnPosition(x, z);
 
 			walkingCamera->setCameraY(newY);
-
 
 			//-----------------------------------------------------------------//
 			// Update matrixes
@@ -432,7 +451,9 @@ int	CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 				geomatryShader,
 				geomatryInputLayout,
 				waterMesh,
-				cubeMesh
+				cubeMesh,
+				pPerFrameConstantBuffer
+
 			);
 
 
@@ -455,17 +476,20 @@ int	CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 				light,
 				heightPlaneMesh,
 				shadowMap,
-				walkingCamera
+				walkingCamera, 
+				pPerFrameConstantBuffer,
+				pShadowConstantBuffer
+
 			);
 			
 			//Draw shadow here maybe?
 			shadowMap.shadowPass(&light, pShadowConstantBuffer, ShadowVertexShader, shadowInputLayout); //Stuff that happenes in the ShadowMap class.
 
 			//Stuff that happenes in the Mesh class.
-			cubeMesh.DrawShadow(immediateContext, walkingCamera, pConstantBuffer);
-			houseMesh.DrawShadow(immediateContext, walkingCamera, pConstantBuffer);
-			waterMesh.DrawShadow(immediateContext, walkingCamera, pConstantBuffer);
-			heightPlaneMesh.DrawShadow(immediateContext, walkingCamera, pConstantBuffer);
+			cubeMesh.DrawShadow(immediateContext, walkingCamera, pPerFrameConstantBuffer);
+			houseMesh.DrawShadow(immediateContext, walkingCamera, pPerFrameConstantBuffer);
+			waterMesh.DrawShadow(immediateContext, walkingCamera, pPerFrameConstantBuffer);
+			heightPlaneMesh.DrawShadow(immediateContext, walkingCamera, pPerFrameConstantBuffer);
 
 			//Shows the front buffer
 			pSwapChain->Present(1, 0);

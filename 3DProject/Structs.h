@@ -121,5 +121,11 @@ struct ShadowConstantBuffer
 	DirectX::XMFLOAT4X4 LightViewProjectionMatrix;
 };
 
+struct PerFrameMatrixes
+{
+	DirectX::XMFLOAT4X4 ProjectionMatrix;
+	DirectX::XMFLOAT4X4 ViewMatrix;
+	DirectX::XMFLOAT4 CameraPosition;
+};
 
 

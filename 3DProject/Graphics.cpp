@@ -12,7 +12,7 @@ Graphics::Graphics(UINT width, UINT height, HWND windowHandle, ID3D11Device*& pD
 	ID3D11SamplerState*& sampler, Light& light, ID3D11Buffer*& pPixelConstantBuffer, constantBufferMatrixes matrixes, 
 	ID3D11Buffer*& FullScreenVertexBuffer, ID3D11VertexShader*& finalPassVertexShader, ID3D11PixelShader*& finalPassPixelShader, 
 	ID3D11InputLayout*& lightPassInputLayout, std::string& lightPassVertexShaderByteCode, ID3D11RasterizerState*& rasState, 
-	ID3D11RasterizerState*& rasStateNoCulling, ID3D11GeometryShader*& geomatryShader, ID3D11InputLayout*& geomatryInputLayout)
+	ID3D11RasterizerState*& rasStateNoCulling, ID3D11GeometryShader*& geomatryShader, ID3D11InputLayout*& geomatryInputLayout, ID3D11Buffer*& pPerFrameConstantBuffer, PerFrameMatrixes perFrameStruct)
 {
 	//... SETING UP D3D11 THINGS ...//
 	//////////////////////////////
@@ -59,6 +59,9 @@ Graphics::Graphics(UINT width, UINT height, HWND windowHandle, ID3D11Device*& pD
 
 	//... Load pixel and vertex shaders for light pass //
 	loadLightPassShaders(pDevice, lightPassVertexShaderByteCode, finalPassVertexShader, finalPassPixelShader);
+
+	//.. Create Per Frame Constant Buffer //
+	createPerFrameBuffer(pDevice, pPerFrameConstantBuffer, perFrameStruct);
 	
 }
 
@@ -442,3 +445,27 @@ bool Graphics::createRasterizerStates(ID3D11Device* device, ID3D11RasterizerStat
 	immediateContext->RSSetState(rasStateNoCulling);
 	return true;
 }
+
+bool Graphics::createPerFrameBuffer(ID3D11Device* pDevice, ID3D11Buffer*& pPerFrameConstantBuffer, PerFrameMatrixes perFrameStruct)
+{
+	//Information about D3D11_BUFFER_DESC https://docs.microsoft.com/en-us/windows/win32/api/d3d11/ns-d3d11-d3d11_buffer_desc
+	D3D11_BUFFER_DESC constantBufferDesc = {};
+	constantBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	constantBufferDesc.Usage = D3D11_USAGE_DEFAULT;
+	constantBufferDesc.CPUAccessFlags = 0;
+	constantBufferDesc.ByteWidth = sizeof(perFrameStruct);
+	constantBufferDesc.StructureByteStride = 0;
+	D3D11_SUBRESOURCE_DATA constantSubresourceData = {};
+	constantSubresourceData.pSysMem = &perFrameStruct;
+	constantBufferDesc.MiscFlags = 0;
+	constantSubresourceData.SysMemPitch = 0;
+	constantSubresourceData.SysMemSlicePitch = 0;
+
+	HRESULT hr = pDevice->CreateBuffer(&constantBufferDesc, &constantSubresourceData, std::addressof(pPerFrameConstantBuffer));
+	if (FAILED(hr))
+	{
+		std::cout << "Could not create PerFrameConstantBuffer" << std::endl;
+	}
+	return !FAILED(hr);
+}
+

@@ -35,16 +35,14 @@ cbuffer DepthMatrixBuffer : register(b1) //Need to register this one.
     float4x4 lightViewProjectionMatrix;
 }
 
-struct myMatrixes //Need to register this one as well. 
+struct myMatrixes
 {
-    float4x4 WorldViewProjection;
-    float4x4 World;
-    float time;
-    int hasTexture;
-    int hasNormal;
-    int animated;
+    row_major matrix ProjectionMatrix;
+    row_major matrix ViewMatrix;
+    float4 CameraPosition;
+
 };
-cbuffer matrixes
+cbuffer matrixes : register(b2) //PerframeMatrixes
 {
     myMatrixes matrixes;
 };

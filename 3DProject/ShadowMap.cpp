@@ -32,7 +32,7 @@ ShadowMap::ShadowMap(ID3D11DeviceContext* deviceContext, ID3D11Device* device, u
 void ShadowMap::SetProjectionMatrix(Light* light, ID3D11Buffer*& pShadowConstantBuffer)
 {
 	//Set the projection to ortographic
-	float nearZ = 1.0f, farZ = 100.0f;
+	float nearZ = 0.10f, farZ = 1000.0f;
 	float veiwWidth = 30.0f, viewHeight = 20.0f;
 
 	this->lightProjectionMatrix = DirectX::XMMatrixOrthographicOffCenterLH(-veiwWidth, veiwWidth, -viewHeight, viewHeight, nearZ, farZ);
