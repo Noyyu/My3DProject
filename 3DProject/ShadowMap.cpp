@@ -184,7 +184,6 @@ bool ShadowMap::LoadShadowShaders(ID3D11Device* device, ID3D11VertexShader*& Ver
 	std::string pixelShaderData;
 
 	this->LoadShaderData("ShadowVertexShader", vertexShaderByteCode);
-	this->LoadShaderData("ShadowPixelShader", pixelShaderData);
 
 	// Create deferred_geometry_vs.
 	if (FAILED(device->CreateVertexShader(vertexShaderByteCode.c_str(), vertexShaderByteCode.length(), nullptr, &VertexShader)))
