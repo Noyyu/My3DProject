@@ -43,7 +43,7 @@ private:
 public:
 
 	Mesh(ID3D11Device* pDevice);
-
+	virtual ~Mesh() = default;
 	void setFilePath(std::wstring filePath);
 	bool loadObjModel(ID3D11Device* device, std::wstring fileName, bool isRightHandCoordSystem, bool computeNormals);
 

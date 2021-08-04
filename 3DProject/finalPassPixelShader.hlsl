@@ -8,10 +8,10 @@ SamplerState samplerThing : register(s0);
 struct PSInput
 {
     float4 position : SV_Position;
-    float3 color : COLOR; //Jag använder inte detta
+    float3 color : COLOR;
     float2 textureCoordinates : TEXCOORD;
     float3 normal : NORMAL; 
-    float4 worldPosition : POSITION; //Jag använder inte detta
+    float4 worldPosition : POSITION;
 };
 
 struct Light
@@ -21,7 +21,7 @@ struct Light
     float4 ambient;
     float4 diffuse;
     float4 cameraPosition;
-    float4 direction; //I use point lights but this is needed for shadow maping
+    float4 direction;
     float range;
 };
 

@@ -41,8 +41,10 @@ public:
 
 	ShadowMap(ID3D11DeviceContext* deviceContext, ID3D11Device* device, unsigned int textureWidth, unsigned int textureheighte,
 			  ID3D11Buffer*& pShadowConstantBuffer, ID3D11InputLayout*& inputLayoutSM, std::string& vertexShaderByteCode, ID3D11VertexShader*& vertexShader);
+	virtual ~ShadowMap() = default;
 
 	void shadowPass(Light* light, ID3D11Buffer*& pShadowConstantBuffer, ID3D11VertexShader* vertexShader, ID3D11InputLayout*& inputLayoutSM); //Needs constant buffer probably.
 	void SetProjectionMatrix(Light* light, ID3D11Buffer*& pShadowConstantBuffer); //needs constantbuffer
-
+	void ShutDownShadows();
+	//Add shut down shadow thing. 
 };

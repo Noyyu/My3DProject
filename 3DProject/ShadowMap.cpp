@@ -32,7 +32,7 @@ ShadowMap::ShadowMap(ID3D11DeviceContext* deviceContext, ID3D11Device* device, u
 void ShadowMap::SetProjectionMatrix(Light* light, ID3D11Buffer*& pShadowConstantBuffer)
 {
 	//Set the projection to ortographic
-	float nearZ = 1.00f, farZ = 100.0f;
+	float nearZ = 1.00f, farZ = 200.0f;
 	float viewWidth = 30.0f, viewHeight = 20.0f;
 
 	this->lightProjectionMatrix = DirectX::XMMatrixTranspose(DirectX::XMMatrixOrthographicOffCenterLH(-viewWidth, viewWidth, -viewHeight, viewHeight, nearZ, farZ));
@@ -55,6 +55,8 @@ void ShadowMap::SetProjectionMatrix(Light* light, ID3D11Buffer*& pShadowConstant
 	// Update
 	this->deviceContext->UpdateSubresource(pShadowConstantBuffer, 0, nullptr, &this->shadowConstantBufferStruct.LightViewProjectionMatrix, 0, 0); //Is -not- using a struct constant buffer holder atm. 
 }
+
+
 
 
 bool ShadowMap::CreateShadowMap()
@@ -134,7 +136,6 @@ void ShadowMap::shadowPass(Light* light, ID3D11Buffer*& pShadowConstantBuffer, I
 	this->SetProjectionMatrix(light, pShadowConstantBuffer);
 
 	this->deviceContext->VSSetConstantBuffers(0, 1, &pShadowConstantBuffer);
-
 	this->deviceContext->VSSetShader(vertexShader, nullptr, 0);
 	this->deviceContext->PSSetShader(nullptr, nullptr, 0);
 	this->deviceContext->GSSetShader(nullptr, nullptr, 0);
@@ -222,3 +223,8 @@ bool ShadowMap::LoadShaderData(const std::string& filename, std::string& shaderB
 	return true;
 }
 
+void ShadowMap::ShutDownShadows()
+{
+	device->Release();
+	deviceContext->Release();
+}

@@ -1,3 +1,8 @@
+#define _CRTDBG_MAP_ALLOC
+#include <stdlib.h>
+#include <crtdbg.h>
+#include <cstdlib>
+
 #include <Windows.h>
 #include "Window.h"
 #include "Graphics.h"
@@ -118,7 +123,7 @@ int	CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 // pCmdLine: contains the command-line arguments as a Unicode string.
 // nCmdShow: flag that says in what format the window should be shown (minimized, maximized, or shown normally)
 {
-
+	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 	//-----------------------------------------------------------------//
 	// Setup window
 	//-----------------------------------------------------------------//
@@ -190,10 +195,6 @@ int	CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 	ID3D11InputLayout*        lightPassInputLayout  = nullptr;
 	std::string               lightPassVertexShaderByteCode;
 
-	//Gaussian blur stuff
-	ID3D11UnorderedAccessView* backBuffer = nullptr; // Delete
-	ID3D11ComputeShader* computeShader    = nullptr; // Delete
-
 	//matrixsstuff for the quad
 	constantBufferMatrixes matrixes;//used to send the world matrix and worldviewprojection matrixes to the shader later for 
 	DirectX::XMMATRIX WorldViewProjection = DirectX::XMMatrixIdentity();
@@ -214,7 +215,7 @@ int	CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 	//-----------------------------------------------------------------//
 	//I'll use this as my shadow light. 
 	Light light;
-	light.position       = DirectX::XMFLOAT4(0.0f, 5.0f, 0.0f, 1.0f); // X+ = >, Z+ = ^
+	light.position       = DirectX::XMFLOAT4(0.0f, 5.0f, -2.0f, 1.0f); // X+ = >, Z+ = ^
 	light.attenuation    = DirectX::XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f);
 	light.ambient        = DirectX::XMFLOAT4(0.2f, 0.2f, 0.2f, 1.0f);
 	light.diffuse        = DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
@@ -498,6 +499,11 @@ int	CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 
 	//Get rid of some of them memoryleaks
 	deffered.shutDownDeferredObjects();
+	shadowMap.ShutDownShadows();
+	heightPlaneMesh.shutDownMesh();
+	houseMesh.shutDownMesh();
+	waterMesh.shutDownMesh();
+	cubeMesh.shutDownMesh();
 
 	rasState->Release();
 	rasStateNoCulling->Release();
@@ -511,18 +517,22 @@ int	CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 	pixelShader->Release();
 	geomatryShader->Release();
 	ShadowVertexShader->Release();
+
 	inputLayout->Release();
 	shadowInputLayout->Release();
 	geomatryInputLayout->Release();
+
 	vertexBuffer->Release();
 	pConstantBuffer->Release();
 	pPixelConstantBuffer->Release();
-	pPixelConstantBuffer->Release();
+	fullScreenVertexBuffer->Release();
 	pShadowConstantBuffer->Release();
+	pPerFrameConstantBuffer->Release();
 	
 	texture->Release();
 	textureShaderResourceView->Release();
 	sampler->Release();
+
 	fullScreentexture->Release();
 	fullScreenTextureShaderResourceView->Release();
 	fullScreenSampler->Release();
@@ -530,6 +540,44 @@ int	CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 	lightPassVertexShader->Release();
 	lightPassPixelShader->Release();
 	lightPassInputLayout->Release();
+
+	//----
+
+	rasState = 0;
+	rasStateNoCulling = 0;
+	pDevice = 0;
+	pSwapChain = 0;
+	immediateContext = 0;
+	renderTargetView = 0;
+	depthTexture = 0;
+	depthView = 0;
+	vertexShader = 0;
+	pixelShader = 0;
+	geomatryShader = 0;
+	ShadowVertexShader = 0;
+
+	inputLayout = 0;
+	shadowInputLayout = 0;
+	geomatryInputLayout = 0;
+
+	vertexBuffer = 0;
+	pConstantBuffer = 0;
+	pPixelConstantBuffer = 0;
+	fullScreenVertexBuffer = 0;
+	pShadowConstantBuffer = 0;
+	pPerFrameConstantBuffer = 0;
+
+	texture = 0;
+	textureShaderResourceView = 0;
+	sampler = 0;
+
+	fullScreentexture = 0;
+	fullScreenTextureShaderResourceView = 0;
+	fullScreenSampler = 0;
+
+	lightPassVertexShader = 0;
+	lightPassPixelShader = 0;
+	lightPassInputLayout = 0;
 	
 	ID3D11Debug* pDebug = nullptr;
 	pDevice->QueryInterface(IID_PPV_ARGS(&pDebug));
@@ -537,6 +585,5 @@ int	CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 	pDebug->Release();
 
 	delete walkingCamera;
-
 	return 0;
 }

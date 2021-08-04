@@ -1256,13 +1256,30 @@ void Mesh::createObjectConstantBuffer(ID3D11Device* device)
     }
 }
 
-void Mesh::shutDownMesh()
-{
-    meshVertexBuffer->Release();
-    meshIndexBuffer->Release();
-}
 
 void Mesh::Animation(bool animation)
 {
     this->animation = animation;
+}
+
+
+void Mesh::shutDownMesh()
+{
+    mtlTexture->Release();
+    mtlNormalTexture->Release();
+    mtlShaderResourceView->Release();
+    mtlNormalShaderResourceView->Release();
+    mtlRenderTargetView->Release();
+    meshVertexBuffer->Release();
+    meshIndexBuffer->Release();
+    objConstantBuffer->Release();
+
+    mtlTexture = 0;
+    mtlNormalTexture = 0;
+    mtlShaderResourceView = 0;
+    mtlNormalShaderResourceView = 0;
+    mtlRenderTargetView = 0;
+    meshVertexBuffer = 0;
+    meshIndexBuffer = 0;
+    objConstantBuffer = 0;
 }
