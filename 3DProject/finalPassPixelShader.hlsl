@@ -30,7 +30,7 @@ cbuffer pixelConstantBuffer :register(b0)
     Light light;
 };
 
-cbuffer DepthMatrixBuffer : register(b1) //Need to register this one.
+cbuffer DepthMatrixBuffer : register(b1) //Shadow constant buffer
 {
     float4x4 lightViewProjectionMatrix;
 }
@@ -60,6 +60,7 @@ float4 main(in PSInput input) : sv_Target ////Skriver SV_OutputControlPointID ti
     float4 albedo = diffuseTexture.Sample(samplerThing, input.textureCoordinates);
     float3 normals = normalTexture.Sample(samplerThing, input.textureCoordinates);
     float3 position = positionTexture.Sample(samplerThing, input.textureCoordinates);
+    float depthMap = depthTexture.Sample(samplerThing, input.textureCoordinates);
     
     normals = normalize(normals);
     
@@ -114,7 +115,7 @@ float4 main(in PSInput input) : sv_Target ////Skriver SV_OutputControlPointID ti
     float bias = 0.001f;
     
     float dx = 1.0f / 640; // this must be the same as the texture size!!
-    float dy = 1.0f / 480; //ditto
+    float dy = 1.0f / 640; //ditto
     
     // To prevent pixelation
     float s0 = (depthTexture.Sample(samplerThing, smTex + float2(0.0f, 0.0f)).r + bias < depth) ? 0.0f : 1.0f;

@@ -36,6 +36,7 @@ public:
 	};
 
 	DepthMap depthMap;
+	ShadowConstantBuffer shadowConstantBufferStruct;
 	ComPtr<ID3D11InputLayout> *shadowInputLayout;
 
 	ShadowMap(ID3D11DeviceContext* deviceContext, ID3D11Device* device, unsigned int textureWidth, unsigned int textureheighte,

@@ -1217,12 +1217,12 @@ void Mesh::DrawShadow(ID3D11DeviceContext* immediateContext, Camera* camera, ID3
         immediateContext->IASetIndexBuffer(meshIndexBuffer, DXGI_FORMAT_R32_UINT, 0);
         immediateContext->IASetVertexBuffers(0, 1, &meshVertexBuffer, &stride, &offset);
 
-        //DirectX::XMMATRIX scale = DirectX::XMMatrixScaling(1, 1, 1);
-        //DirectX::XMMATRIX translate = DirectX::XMMatrixTranslation(0, 0, 0); // X+ = >, Z+ = ^
-        //DirectX::XMMATRIX world = scale * translate;
+        DirectX::XMMATRIX scale = DirectX::XMMatrixScaling(1, 1, 1);
+        DirectX::XMMATRIX translate = DirectX::XMMatrixTranslation(0, 0, 0); // X+ = >, Z+ = ^
+        DirectX::XMMATRIX world = scale * translate;
 
-        //this->objMats.World = matrixFunction.setWorld(world);
-        //this->objMats.WorldViewProjection = matrixFunction.setWVP(world * camera->getCameraView() * camera->getCameraProjection());
+        this->objMats.World = matrixFunction.setWorld(world);
+        this->objMats.WorldViewProjection = matrixFunction.setWVP(DirectX::XMMatrixTranspose(world * camera->getCameraView() * camera->getCameraProjection())); //Isn't needed really
 
         immediateContext->UpdateSubresource(pConstantBuffer, 0, NULL, &objMats, 0, 0);
         immediateContext->VSSetConstantBuffers(1, 1, &pConstantBuffer);

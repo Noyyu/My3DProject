@@ -32,25 +32,28 @@ ShadowMap::ShadowMap(ID3D11DeviceContext* deviceContext, ID3D11Device* device, u
 void ShadowMap::SetProjectionMatrix(Light* light, ID3D11Buffer*& pShadowConstantBuffer)
 {
 	//Set the projection to ortographic
-	float nearZ = 0.10f, farZ = 1000.0f;
-	float veiwWidth = 30.0f, viewHeight = 20.0f;
+	float nearZ = 1.00f, farZ = 100.0f;
+	float viewWidth = 30.0f, viewHeight = 20.0f;
 
-	this->lightProjectionMatrix = DirectX::XMMatrixOrthographicOffCenterLH(-veiwWidth, veiwWidth, -viewHeight, viewHeight, nearZ, farZ);
+	this->lightProjectionMatrix = DirectX::XMMatrixTranspose(DirectX::XMMatrixOrthographicOffCenterLH(-viewWidth, viewWidth, -viewHeight, viewHeight, nearZ, farZ));
+	//this->lightProjectionMatrix = DirectX::XMMatrixPerspectiveFovLH(DirectX::XM_PI * 0.45, this->textureWidth / this->textureHeight, 0.001f, 200.0f);
+
 
 	DirectX::XMVECTOR position = { light->position.x, light->position.y, light->position.z, 1.0f };
 
 	sm::Vector4 lightDirection = light->direction;
 	sm::Vector4 lightPosition  = light->position;
-	sm::Vector4 target = lightPosition + lightDirection;
+	sm::Vector4 target = light->direction;
 
 	// Set view matrix
 	this->lightViewMatrix = DirectX::XMMatrixLookAtLH(position, target, { 0.0f, 1.0f, 0.0f });
+	this->lightViewMatrix = DirectX::XMMatrixTranspose(this->lightViewMatrix);
 
-	//Set light world view peojection matrix;
-	DirectX::XMStoreFloat4x4(&this->lightViewProjectionMatrix, (this->lightViewMatrix * this->lightProjectionMatrix));
+	//Set light world view projection matrix;
+	DirectX::XMStoreFloat4x4(&this->shadowConstantBufferStruct.LightViewProjectionMatrix, (this->lightViewMatrix * this->lightProjectionMatrix));
 
 	// Update
-	this->deviceContext->UpdateSubresource(pShadowConstantBuffer, 0, nullptr, &this->lightViewProjectionMatrix, 0, 0); //Is -not- using a struct constant buffer holder atm. 
+	this->deviceContext->UpdateSubresource(pShadowConstantBuffer, 0, nullptr, &this->shadowConstantBufferStruct.LightViewProjectionMatrix, 0, 0); //Is -not- using a struct constant buffer holder atm. 
 }
 
 
@@ -134,6 +137,7 @@ void ShadowMap::shadowPass(Light* light, ID3D11Buffer*& pShadowConstantBuffer, I
 
 	this->deviceContext->VSSetShader(vertexShader, nullptr, 0);
 	this->deviceContext->PSSetShader(nullptr, nullptr, 0);
+	this->deviceContext->GSSetShader(nullptr, nullptr, 0);
 }
 
 
@@ -164,10 +168,10 @@ bool ShadowMap::CreateConstantBufferSM(ID3D11Buffer*& pShadowConstantBuffer)
 	constantBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
 	constantBufferDesc.Usage = D3D11_USAGE_DEFAULT;//Is updated every frame therefore it needs to be dynamic.. its not tho
 	constantBufferDesc.CPUAccessFlags = 0;
-	constantBufferDesc.ByteWidth = sizeof(lightViewProjectionMatrix); //I usually use a struct for this but i dont know if this works or nah.
+	constantBufferDesc.ByteWidth = sizeof(ShadowConstantBuffer); //I usually use a struct for this but i dont know if this works or nah.
 	constantBufferDesc.StructureByteStride = 0;
 	D3D11_SUBRESOURCE_DATA constantSubresourceData = {};
-	constantSubresourceData.pSysMem = &lightViewProjectionMatrix;
+	constantSubresourceData.pSysMem = &this->shadowConstantBufferStruct;
 	constantBufferDesc.MiscFlags = 0;
 	constantSubresourceData.SysMemPitch = 0;
 	constantSubresourceData.SysMemSlicePitch = 0;

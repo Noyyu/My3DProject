@@ -208,7 +208,6 @@ ID3D11ShaderResourceView* Deferred::getShaderResourceView(int index)
 
 void Deferred::setShaderResourceView(ID3D11DeviceContext* deviceContext, ID3D11ShaderResourceView* shadowResourceView)
 {
-
 	ID3D11ShaderResourceView* targets[4] = { normalResourceView, positionResourceView, diffuseResourceView, shadowResourceView}; //Binds the textures from the geomatry pass to the light pass
 
 	// Bind the render target view array and depth stencil buffer to the output render pipeline.
