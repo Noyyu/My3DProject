@@ -95,7 +95,7 @@ bool Graphics::createInterface(UINT width, UINT height, HWND windowHandle, IDXGI
 		nullptr, // Choose the default adapter 
 		D3D_DRIVER_TYPE_HARDWARE,// We want a hardwere device
 		nullptr, // Handle to the binary for the driver we want to load (which i dont want)
-		D3D11_CREATE_DEVICE_SINGLETHREADED | D3D11_CREATE_DEVICE_DEBUG, // makes the device single threaded which can inprove performence
+		/*D3D11_CREATE_DEVICE_SINGLETHREADED |*/ D3D11_CREATE_DEVICE_DEBUG, // makes the device single threaded which can inprove performence
 		nullptr, // Feature level
 		0,
 		D3D11_SDK_VERSION,// Use the sdk verion you got on your system

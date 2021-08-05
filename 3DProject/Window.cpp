@@ -7,18 +7,33 @@ LRESULT CALLBACK WindowProc(HWND windowHandle, UINT msg, WPARAM wParam, LPARAM l
 	//Switch on message id
 	switch (msg)
 	{
-		//When the WM_CLOSE is sent, //Function that makes the application close as you close the window
+	case WM_DESTROY:
+	
+		PostQuitMessage(0);
+	
+	//When the WM_CLOSE is sent, //Function that makes the application close as you close the window
 	case WM_CLOSE:
 		//post a quit message
-		PostQuitMessage(60);
+		PostQuitMessage(0);
 		break;
-
+	
+	
 	case WM_ACTIVATEAPP:
-
+	
 		DirectX::Keyboard::ProcessMessage(msg, wParam, lParam);
 		DirectX::Mouse::ProcessMessage(msg, wParam, lParam);
 		break;
+	
 
+	case WM_CHAR:
+		switch (wParam)
+		{
+		case 0x1B: // Process escape key. 
+			PostQuitMessage(0);
+			break;
+		default:
+			break;
+		}
 
 	case WM_INPUT:
 	case WM_MOUSEMOVE:

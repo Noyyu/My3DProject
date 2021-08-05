@@ -20,7 +20,7 @@ private:
 	int animation = 0;
 
 	constantBufferMatrixes objMats;
-	matrixFunctions matrixFunction;
+	MatrixFunctions matrixFunction;
 
 	std::vector<int> meshSubsetIndexStart = {};
 	std::vector<int> meshSubsetTexture = {};

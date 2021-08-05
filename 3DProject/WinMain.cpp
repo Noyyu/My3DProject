@@ -1,7 +1,7 @@
-#define _CRTDBG_MAP_ALLOC
-#include <stdlib.h>
-#include <crtdbg.h>
-#include <cstdlib>
+//#define _CRTDBG_MAP_ALLOC
+//#include <stdlib.h>
+//#include <crtdbg.h>
+//#define DBG_NEW new ( _NORMAL_BLOCK , __FILE__ , __LINE__ )
 
 #include <Windows.h>
 #include "Window.h"
@@ -13,6 +13,7 @@
 #include "BasicLoader.h"
 #include "HeightMap.h"
 #include "ShadowMap.h"
+#include "ParticleSystem.h"
 
 void setPerFrameMatrixes(PerFrameMatrixes& object, Camera* camera, ID3D11DeviceContext* immediateContext, ID3D11Buffer*& perFrameConstantBuffer)
 {
@@ -63,7 +64,7 @@ void geomatryPass(ID3D11DeviceContext* immediateContext, ID3D11RenderTargetView*
 	//immediateContext->Draw(6, 0);
 
 	objObject.drawObjModel(immediateContext, perFrameConstantBuffer, deferred, vertexShader, pixelShader, sampler, pPixelConstantBuffer, camera);
-	objObject2.drawObjModel(immediateContext, perFrameConstantBuffer, deferred, vertexShader, pixelShader, sampler, pPixelConstantBuffer, camera);
+	//objObject2.drawObjModel(immediateContext, perFrameConstantBuffer, deferred, vertexShader, pixelShader, sampler, pPixelConstantBuffer, camera);
 	WaterMesh.drawObjModel(immediateContext, perFrameConstantBuffer, deferred, vertexShader, pixelShader, sampler, pPixelConstantBuffer, camera);
 	cubeMesh.drawObjModel(immediateContext, perFrameConstantBuffer, deferred, vertexShader, pixelShader, sampler, pPixelConstantBuffer, camera);
 }
@@ -74,7 +75,7 @@ void lightPass(ID3D11DeviceContext* immediateContext, ID3D11RenderTargetView* re
 	ID3D11Buffer*& pConstantBuffer, ID3D11ShaderResourceView* textureSRV,
 	ID3D11SamplerState* sampler, ID3D11Buffer*& pPixelConstantBuffer, constantBufferMatrixes matrixes, Deferred& deferred, Light light, Mesh &objObject, ShadowMap shadowObject, Camera* camera, ID3D11Buffer*& perFrameConstantBuffer, ID3D11Buffer*& pShadowConstantBuffer)
 {
-	matrixFunctions matrixFunction;
+	MatrixFunctions matrixFunction;
 	float clearColor[4] = { 1,1,1,1 };
 	deferred.unbindShaderResourceView(immediateContext);
 
@@ -123,7 +124,7 @@ int	CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 // pCmdLine: contains the command-line arguments as a Unicode string.
 // nCmdShow: flag that says in what format the window should be shown (minimized, maximized, or shown normally)
 {
-	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
+	//_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 	//-----------------------------------------------------------------//
 	// Setup window
 	//-----------------------------------------------------------------//
@@ -195,6 +196,8 @@ int	CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 	ID3D11InputLayout*        lightPassInputLayout  = nullptr;
 	std::string               lightPassVertexShaderByteCode;
 
+
+
 	//matrixsstuff for the quad
 	constantBufferMatrixes matrixes;//used to send the world matrix and worldviewprojection matrixes to the shader later for 
 	DirectX::XMMATRIX WorldViewProjection = DirectX::XMMatrixIdentity();
@@ -202,7 +205,7 @@ int	CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 	World = DirectX::XMMatrixTranslation(0.0f, 5.0f, 0.0f);
 	matrixes.hasNormal  = false;
 	matrixes.hasTexture = true;
-	matrixFunctions matrixFunction;
+	MatrixFunctions matrixFunction;
 
 	//per frame matrix stuff
 	PerFrameMatrixes perframeMatrixes;
@@ -283,6 +286,17 @@ int	CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 	);
 
 	//-----------------------------------------------------------------//
+	// Particle things
+	//-----------------------------------------------------------------//
+
+	//Particle system stuff
+	DirectX::XMFLOAT4 particlePosition(0, 10, 0, 1);
+	Particle particleList[MAX_PARTICLES];
+	ParticleSystem particles;
+	particles.InitializeParticles(pDevice, particleList, particlePosition);
+
+
+	//-----------------------------------------------------------------//
 	// Shadow mapping
 	//-----------------------------------------------------------------//
 
@@ -335,7 +349,7 @@ int	CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 	cubeMesh.setFilePath(filePath);
 
 	heightPlaneMesh.loadObjModel(pDevice, fileName2, false, true);
-	houseMesh.loadObjModel(pDevice, fileName, false, true); //False = normalerna hamnar på fel håll men specular funkar??
+	//houseMesh.loadObjModel(pDevice, fileName, false, true); //False = normalerna hamnar på fel håll men specular funkar??
 	waterMesh.loadObjModel(pDevice, waterMeshPath, false, true);
 	cubeMesh.loadObjModel(pDevice, cubePath, false, true);
 
@@ -367,6 +381,10 @@ int	CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 	// Update
 	//-----------------------------------------------------------------//
 
+	if (windowHandle)
+	{
+
+	}
 	while (msg.message != WM_QUIT) //event queue
 	{
 		//TranslateMessage(&msg);
@@ -447,6 +465,7 @@ int	CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 				pPerFrameConstantBuffer
 
 			);
+			
 
 			//Draw shadow here maybe?
 			shadowMap.shadowPass(&light, pShadowConstantBuffer, ShadowVertexShader, shadowInputLayout); //Stuff that happenes in the ShadowMap class.
@@ -456,7 +475,7 @@ int	CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 			houseMesh.DrawShadow(immediateContext, walkingCamera, pPerFrameConstantBuffer);
 			waterMesh.DrawShadow(immediateContext, walkingCamera, pPerFrameConstantBuffer);
 			heightPlaneMesh.DrawShadow(immediateContext, walkingCamera, pPerFrameConstantBuffer);
-
+			
 			lightPass
 			(
 				immediateContext,
@@ -482,7 +501,7 @@ int	CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 
 			);
 			
-
+			particles.particlePass(immediateContext, walkingCamera);
 
 			//Shows the front buffer
 			pSwapChain->Present(1, 0);
@@ -496,6 +515,9 @@ int	CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 	//-----------------------------------------------------------------//
 	// Shut down
 	//-----------------------------------------------------------------//
+
+	ID3D11Debug* pDebug = nullptr;
+	pDevice->QueryInterface(IID_PPV_ARGS(&pDebug));
 
 	//Get rid of some of them memoryleaks
 	deffered.shutDownDeferredObjects();
@@ -579,11 +601,13 @@ int	CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 	lightPassPixelShader = 0;
 	lightPassInputLayout = 0;
 	
-	ID3D11Debug* pDebug = nullptr;
-	pDevice->QueryInterface(IID_PPV_ARGS(&pDebug));
+
+
+	delete walkingCamera;
+
+
 	pDebug->ReportLiveDeviceObjects(D3D11_RLDO_DETAIL);
 	pDebug->Release();
 
-	delete walkingCamera;
 	return 0;
 }

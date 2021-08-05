@@ -100,7 +100,7 @@ struct constantBufferMatrixes
 	int animated = 0;
 };
 
-struct matrixFunctions
+struct MatrixFunctions
 {
 	DirectX::XMFLOAT4X4 setWVP(DirectX::XMMATRIX WVP)
 	{
