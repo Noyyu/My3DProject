@@ -128,10 +128,10 @@ void ShadowMap::shadowPass(Light* light, ID3D11Buffer*& pShadowConstantBuffer, I
 {
 	ID3D11RenderTargetView* nullRTV[] = { nullptr };
 	this->deviceContext->OMSetRenderTargets(1, nullRTV, this->depthMap.depthScentilView.Get());
-	this->deviceContext->ClearDepthStencilView(this->depthMap.depthScentilView.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0);
+	this->deviceContext->ClearDepthStencilView(this->depthMap.depthScentilView.Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 
 	this->deviceContext->IASetInputLayout(inputLayoutSM);
-	this->deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	//this->deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 	this->SetProjectionMatrix(light, pShadowConstantBuffer);
 

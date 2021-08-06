@@ -45,14 +45,14 @@ public:
 	Mesh(ID3D11Device* pDevice);
 	virtual ~Mesh() = default;
 	void setFilePath(std::wstring filePath);
-	bool loadObjModel(ID3D11Device* device, std::wstring fileName, bool isRightHandCoordSystem, bool computeNormals);
+	bool loadObjModel(ID3D11Device*& device, std::wstring fileName, bool isRightHandCoordSystem, bool computeNormals);
 
-	void drawObjModel(ID3D11DeviceContext* immediateContext, ID3D11Buffer*& pConstantBuffer, Deferred deferred,
+	void drawObjModel(ID3D11DeviceContext*& immediateContext, ID3D11Buffer*& pConstantBuffer, Deferred deferred,
 		ID3D11VertexShader* vertexShader, ID3D11PixelShader* pixelShader, ID3D11SamplerState* sampler, ID3D11Buffer*& pPixelConstantBuffer, Camera* camera);
 
-	void DrawShadow(ID3D11DeviceContext* immediateContext, Camera* camera, ID3D11Buffer*& pConstantBuffer);
+	void DrawShadow(ID3D11DeviceContext*& immediateContext, Camera*& camera, ID3D11Buffer*& pConstantBuffer);
 
-	void createObjectConstantBuffer(ID3D11Device* device);
+	void createObjectConstantBuffer(ID3D11Device* device); //Not used
 
 	//Create a draw shadow function here maybe. 
 	void shutDownMesh();

@@ -15,7 +15,7 @@ void Mesh::setFilePath(std::wstring filePath)
     this->filePath = filePath;
 }
 
-bool Mesh::loadObjModel(ID3D11Device* device, std::wstring fileName, bool isRightHandCoordSystem, bool computeNormals)
+bool Mesh::loadObjModel(ID3D11Device*& device, std::wstring fileName, bool isRightHandCoordSystem, bool computeNormals)
 {
     using namespace DirectX; //Needed for vector operations
     HRESULT hr = {};
@@ -1150,7 +1150,7 @@ bool Mesh::loadObjModel(ID3D11Device* device, std::wstring fileName, bool isRigh
 }
 
 
-void Mesh::drawObjModel(ID3D11DeviceContext* immediateContext, ID3D11Buffer*& pConstantBuffer, Deferred deferred,
+void Mesh::drawObjModel(ID3D11DeviceContext*& immediateContext, ID3D11Buffer*& pConstantBuffer, Deferred deferred,
     ID3D11VertexShader* vertexShader, ID3D11PixelShader* pixelShader, ID3D11SamplerState* sampler, ID3D11Buffer*& pPixelConstantBuffer, Camera* camera)
 {
     for (int i = 0; i < meshSubsets; i++)
@@ -1207,7 +1207,7 @@ void Mesh::drawObjModel(ID3D11DeviceContext* immediateContext, ID3D11Buffer*& pC
     }
 }
 
-void Mesh::DrawShadow(ID3D11DeviceContext* immediateContext, Camera* camera, ID3D11Buffer*& pConstantBuffer)
+void Mesh::DrawShadow(ID3D11DeviceContext*& immediateContext, Camera*& camera, ID3D11Buffer*& pConstantBuffer)
 {
     for (int i = 0; i < meshSubsets; i++)
     {

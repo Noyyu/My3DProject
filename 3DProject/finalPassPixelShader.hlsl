@@ -129,11 +129,11 @@ float4 main(in PSInput input) : sv_Target ////Skriver SV_OutputControlPointID ti
     
     float shadowCoeff = lerp(lerp(s0, s1, lerps.x), lerp(s2, s3, lerps.x), lerps.y);
     
-    //finalColor = ((diffuse + specular) * albedo) * (shadowCoeff + 0.3);
+    finalColor = ((diffuse + specular) * albedo) * (shadowCoeff + 0.3);
     
     //--------------------
     
-    finalColor = (diffuse + specular) * albedo;
+    //finalColor = (diffuse + specular) * albedo;
     if (light.range < distance) //Denna funkar inte just nu av någon anledning. 
     {
         return (albedo * ambient);
