@@ -82,7 +82,7 @@ PixelShaderOutput main(PixelShaderInput input)
     
     if (matrixes.hasNormal == 1)
     {
-        //output.Normal = DoNormalMapping(input);
+        output.Normal = DoNormalMapping(input);
     }
     
     output.Position = input.worldPosition;

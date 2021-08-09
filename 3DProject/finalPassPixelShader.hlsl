@@ -4,6 +4,7 @@ Texture2D positionTexture : register(t1);
 Texture2D diffuseTexture : register(t2);
 Texture2D depthTexture : register(t3); //For shadow mapping //Denna funkar inte just nu. 
 SamplerState samplerThing : register(s0);
+SamplerState shadowSampler : register(s1);
 
 struct PSInput
 {
@@ -32,7 +33,7 @@ cbuffer pixelConstantBuffer :register(b0)
 
 cbuffer DepthMatrixBuffer : register(b1) //Shadow constant buffer
 {
-    float4x4 lightViewProjectionMatrix;
+    row_major matrix lightViewProjectionMatrix;
 }
 
 struct myMatrixes
@@ -104,8 +105,6 @@ float4 main(in PSInput input) : sv_Target ////Skriver SV_OutputControlPointID ti
         specular = (lightColor * specularFactor * lightSpecularPower) * attenuation * lightIntensity;
     }
     
-    
-    
     //// Shadow calculations
     
     float4 positionL = mul(float4(position, 1.0f), lightViewProjectionMatrix);
@@ -118,10 +117,10 @@ float4 main(in PSInput input) : sv_Target ////Skriver SV_OutputControlPointID ti
     float dy = 1.0f / 640; //ditto
     
     // To prevent pixelation
-    float s0 = (depthTexture.Sample(samplerThing, smTex + float2(0.0f, 0.0f)).r + bias < depth) ? 0.0f : 1.0f;
-    float s1 = (depthTexture.Sample(samplerThing, smTex + float2(dx, 0.0f)).r + bias < depth) ? 0.0f : 1.0f;
-    float s2 = (depthTexture.Sample(samplerThing, smTex + float2(0.0f, dy)).r + bias < depth) ? 0.0f : 1.0f;
-    float s3 = (depthTexture.Sample(samplerThing, smTex + float2(dx, dy)).r + bias < depth) ? 0.0f : 1.0f;
+    float s0 = (depthTexture.Sample(shadowSampler, smTex + float2(0.0f, 0.0f)).r + bias < depth) ? 0.0f : 1.0f;
+    float s1 = (depthTexture.Sample(shadowSampler, smTex + float2(dx, 0.0f)).r + bias < depth) ? 0.0f : 1.0f;
+    float s2 = (depthTexture.Sample(shadowSampler, smTex + float2(0.0f, dy)).r + bias < depth) ? 0.0f : 1.0f;
+    float s3 = (depthTexture.Sample(shadowSampler, smTex + float2(dx, dy)).r + bias < depth) ? 0.0f : 1.0f;
     
     float2 texelPos = float2(smTex.x * dx, smTex.y * dy);
     
@@ -129,8 +128,8 @@ float4 main(in PSInput input) : sv_Target ////Skriver SV_OutputControlPointID ti
     
     float shadowCoeff = lerp(lerp(s0, s1, lerps.x), lerp(s2, s3, lerps.x), lerps.y);
     
-    finalColor = ((diffuse + specular) * albedo) * (shadowCoeff + 0.3);
-    
+    finalColor += ((diffuse + specular) * albedo) * (shadowCoeff);
+
     //--------------------
     
     //finalColor = (diffuse + specular) * albedo;

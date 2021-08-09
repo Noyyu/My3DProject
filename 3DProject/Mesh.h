@@ -18,6 +18,8 @@ private:
 	int meshSubsets = 0;
 	bool hasNormalMap = false;
 	int animation = 0;
+	int followMe = 0;
+	int move=0;
 
 	constantBufferMatrixes objMats;
 	MatrixFunctions matrixFunction;
@@ -57,5 +59,6 @@ public:
 	//Create a draw shadow function here maybe. 
 	void shutDownMesh();
 	void Animation(bool animation);
+	void FollowMe(bool follow);
 
 };

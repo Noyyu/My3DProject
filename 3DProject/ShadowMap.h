@@ -18,6 +18,7 @@ private:
 	DirectX::XMFLOAT4X4 lightViewProjectionMatrix;
 	DirectX::XMMATRIX lightProjectionMatrix;
 	DirectX::XMMATRIX lightViewMatrix;
+	//ID3D11SamplerState* samplerState;
 
 	
 	bool CreateShadowMap();
@@ -25,6 +26,7 @@ private:
 	bool CreateConstantBufferSM(ID3D11Buffer*& pShadowConstantBuffer); //Is to be filled with the lightViewProjectionMatrix. Needs constant buffer.
 	bool LoadShadowShaders(ID3D11Device* device, ID3D11VertexShader*& VertexShader, std::string& vertexShaderByteCode);
 	bool LoadShaderData(const std::string& filename, std::string& shaderByteCode);
+	void CreateShadowSampler();
 
 public:
 
@@ -33,6 +35,7 @@ public:
 		ComPtr <ID3D11Texture2D> texture;
 		ComPtr <ID3D11ShaderResourceView> shaderResourceView;
 		ComPtr <ID3D11DepthStencilView> depthScentilView;
+		ComPtr <ID3D11SamplerState> samplerState;
 	};
 
 	DepthMap depthMap;

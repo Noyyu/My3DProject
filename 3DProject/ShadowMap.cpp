@@ -25,17 +25,21 @@ ShadowMap::ShadowMap(ID3D11DeviceContext* deviceContext, ID3D11Device* device, u
 	{
 		std::cout << "Failed to create Input Layout for Shadow map." << std::endl;
 	}
+	CreateShadowSampler();
 
 }
 
 
 void ShadowMap::SetProjectionMatrix(Light* light, ID3D11Buffer*& pShadowConstantBuffer)
 {
+
+	float zoom = 1.f;
 	//Set the projection to ortographic
-	float nearZ = 1.00f, farZ = 200.0f;
+	float nearZ = 0.10f, farZ = 100.0f;
 	float viewWidth = 30.0f, viewHeight = 20.0f;
 
-	this->lightProjectionMatrix = DirectX::XMMatrixTranspose(DirectX::XMMatrixOrthographicOffCenterLH(-viewWidth, viewWidth, -viewHeight, viewHeight, nearZ, farZ));
+	//this->lightProjectionMatrix = DirectX::XMMatrixTranspose(DirectX::XMMatrixOrthographicOffCenterLH(-viewWidth / zoom, viewWidth / zoom, -viewHeight / zoom, viewHeight / zoom, nearZ, farZ));
+	this->lightProjectionMatrix = DirectX::XMMatrixOrthographicOffCenterLH(-viewWidth/zoom, viewWidth/zoom, -viewHeight/zoom, viewHeight/zoom, nearZ, farZ);
 	//this->lightProjectionMatrix = DirectX::XMMatrixPerspectiveFovLH(DirectX::XM_PI * 0.45, this->textureWidth / this->textureHeight, 0.001f, 200.0f);
 
 
@@ -43,11 +47,12 @@ void ShadowMap::SetProjectionMatrix(Light* light, ID3D11Buffer*& pShadowConstant
 
 	sm::Vector4 lightDirection = light->direction;
 	sm::Vector4 lightPosition  = light->position;
-	sm::Vector4 target = light->direction;
+	//sm::Vector4 target = light->direction;
+	sm::Vector4 target = lightPosition + lightDirection;
 
 	// Set view matrix
 	this->lightViewMatrix = DirectX::XMMatrixLookAtLH(position, target, { 0.0f, 1.0f, 0.0f });
-	this->lightViewMatrix = DirectX::XMMatrixTranspose(this->lightViewMatrix);
+	//this->lightViewMatrix = DirectX::XMMatrixTranspose(this->lightViewMatrix);
 
 	//Set light world view projection matrix;
 	DirectX::XMStoreFloat4x4(&this->shadowConstantBufferStruct.LightViewProjectionMatrix, (this->lightViewMatrix * this->lightProjectionMatrix));
@@ -67,6 +72,8 @@ bool ShadowMap::CreateShadowMap()
 	textureDesc.Width =  this->textureWidth;
 	textureDesc.Height = this->textureHeight;
 
+	//textureDesc.Width = 1920;
+	//textureDesc.Height = 1920;
 	// Use typeless format because the DSV is going to interpret
 	// the bits as DXGI_FORMAT_D24_UNORM_S8_UINT, whereas the SRV is going
 	// to interpret the bits as DXGI_FORMAT_R24_UNORM_X8_TYPELESS.
@@ -127,11 +134,12 @@ bool ShadowMap::CreateShadowMap()
 void ShadowMap::shadowPass(Light* light, ID3D11Buffer*& pShadowConstantBuffer, ID3D11VertexShader* vertexShader, ID3D11InputLayout*& inputLayoutSM)
 {
 	ID3D11RenderTargetView* nullRTV[] = { nullptr };
+	this->deviceContext->PSGetSamplers(1, 1, this->depthMap.samplerState.GetAddressOf());
 	this->deviceContext->OMSetRenderTargets(1, nullRTV, this->depthMap.depthScentilView.Get());
 	this->deviceContext->ClearDepthStencilView(this->depthMap.depthScentilView.Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 
 	this->deviceContext->IASetInputLayout(inputLayoutSM);
-	//this->deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	this->deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 	this->SetProjectionMatrix(light, pShadowConstantBuffer);
 
@@ -227,4 +235,21 @@ void ShadowMap::ShutDownShadows()
 {
 	device->Release();
 	deviceContext->Release();
+}
+
+void ShadowMap::CreateShadowSampler()
+{
+	//Information about D3D11_SAMPLER_DESC https://docs.microsoft.com/en-us/windows/win32/api/d3d11/ns-d3d11-d3d11_sampler_desc
+	D3D11_SAMPLER_DESC desc = {};
+	desc.Filter = D3D11_FILTER_ANISOTROPIC; //	Use anisotropic interpolation for minification, magnification, and mip-level sampling. https://www.3dgep.com/wp-content/uploads/2014/04/Texture-Filtering1.png https://www.3dgep.com/wp-content/uploads/2014/04/Mipmap-Filtering.png
+	desc.AddressU = D3D11_TEXTURE_ADDRESS_CLAMP; // Tile the texture at every (u,v) integer junction
+	desc.AddressV = D3D11_TEXTURE_ADDRESS_CLAMP; //dito
+	desc.AddressW = D3D11_TEXTURE_ADDRESS_CLAMP; //dito
+	desc.MipLODBias = 0;
+	desc.MaxAnisotropy = 16; // Clamping value
+	desc.BorderColor[0] = desc.BorderColor[1] = desc.BorderColor[2] = desc.BorderColor[3] = 0;
+	desc.MinLOD = 0;
+	desc.MaxLOD = D3D11_FLOAT32_MAX; // no upper limit on LOD
+
+	HRESULT hr = device->CreateSamplerState(&desc, this->depthMap.samplerState.GetAddressOf());
 }

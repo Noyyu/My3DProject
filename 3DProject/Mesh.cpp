@@ -1164,10 +1164,24 @@ void Mesh::drawObjModel(ID3D11DeviceContext*& immediateContext, ID3D11Buffer*& p
 
         DirectX::XMMATRIX scale = DirectX::XMMatrixScaling(1,1,1);
         DirectX::XMMATRIX translate = DirectX::XMMatrixTranslation(0,0,0); // X+ = >, Z+ = ^
+
+
+        if (this->followMe == true)
+        {
+            float currentRotation = 0.001;
+            DirectX::XMConvertToRadians(currentRotation);
+            DirectX::XMMATRIX translation = DirectX::XMMatrixTranslation(0.0f, 0.0f, 0.0f);
+            DirectX::XMMATRIX translation2 = DirectX::XMMatrixTranslation(0.0f, 0.0f, 0.5f);
+            DirectX::XMMATRIX rotationMatrix = DirectX::XMMatrixRotationY(DirectX::XMConvertToRadians(currentRotation));
+
+            rotationMatrix = translation * DirectX::XMMatrixRotationY(currentRotation * move) * translation2;
+            translate = rotationMatrix;
+        }
+
         DirectX::XMMATRIX world = scale * translate;
 
         this->objMats.World = matrixFunction.setWorld(world);
-        this->objMats.WorldViewProjection = matrixFunction.setWVP(world * camera->getCameraView() * camera->getCameraProjection());
+        this->objMats.WorldViewProjection =  matrixFunction.setWVP(world * camera->getCameraView() * camera->getCameraProjection());
 
         this->objMats.hasTexture = material[i].hasTexture;
         this->objMats.hasNormal = material[i].hasNormalMap;
@@ -1214,11 +1228,25 @@ void Mesh::DrawShadow(ID3D11DeviceContext*& immediateContext, Camera*& camera, I
         static UINT stride = sizeof(Vertex);
         static UINT offset = 0;
 
+        move+=5;
+
         immediateContext->IASetIndexBuffer(meshIndexBuffer, DXGI_FORMAT_R32_UINT, 0);
         immediateContext->IASetVertexBuffers(0, 1, &meshVertexBuffer, &stride, &offset);
 
         DirectX::XMMATRIX scale = DirectX::XMMatrixScaling(1, 1, 1);
-        DirectX::XMMATRIX translate = DirectX::XMMatrixTranslation(0, 0, 0); // X+ = >, Z+ = ^
+        DirectX::XMMATRIX translate = DirectX::XMMatrixTranslation(0, 0, 0 ); // X+ = >, Z+ = ^
+
+        if (this->followMe == true)
+        {
+            float currentRotation = 0.001;
+            DirectX::XMConvertToRadians(currentRotation);
+            DirectX::XMMATRIX translation = DirectX::XMMatrixTranslation(0.0f, 0.0f, 0.0f);
+            DirectX::XMMATRIX translation2 = DirectX::XMMatrixTranslation(0.0f, 0.0f, 0.5f);
+            DirectX::XMMATRIX rotationMatrix = DirectX::XMMatrixRotationY(DirectX::XMConvertToRadians(currentRotation));
+            rotationMatrix = translation * DirectX::XMMatrixRotationY(currentRotation * move) * translation2;
+            translate = DirectX::XMMatrixTranspose(rotationMatrix);
+        }
+
         DirectX::XMMATRIX world = scale * translate;
 
         this->objMats.World = matrixFunction.setWorld(world);
@@ -1229,8 +1257,6 @@ void Mesh::DrawShadow(ID3D11DeviceContext*& immediateContext, Camera*& camera, I
 
         immediateContext->DrawIndexedInstanced(indices.size(), 1, 0, 0, 0);
     }
-
-
 }
 
 void Mesh::createObjectConstantBuffer(ID3D11Device* device)
@@ -1260,6 +1286,11 @@ void Mesh::createObjectConstantBuffer(ID3D11Device* device)
 void Mesh::Animation(bool animation)
 {
     this->animation = animation;
+}
+
+void Mesh::FollowMe(bool follow)
+{
+    this->followMe = follow;
 }
 
 

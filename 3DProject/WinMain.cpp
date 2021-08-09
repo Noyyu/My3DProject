@@ -30,7 +30,9 @@ void geomatryPass(ID3D11DeviceContext* immediateContext, ID3D11RenderTargetView*
 	ID3D11PixelShader* pixelShader, ID3D11InputLayout* inputLayout, ID3D11Buffer* vertexBuffer,
 	ID3D11Buffer*& pConstantBuffer, ID3D11ShaderResourceView* textureSRV,
 	ID3D11SamplerState* sampler, ID3D11Buffer*& pPixelConstantBuffer, constantBufferMatrixes matrixes, 
-	Deferred deferred, Mesh& objObject, Camera* camera, Mesh& objObject2, ID3D11GeometryShader* geomatryShader, ID3D11InputLayout* geomatryInputLayout, Mesh& WaterMesh, Mesh& cubeMesh, ID3D11Buffer*& perFrameConstantBuffer)
+	Deferred deferred, Mesh& objObject, Camera* camera, Mesh& objObject2, ID3D11GeometryShader* geomatryShader, 
+	ID3D11InputLayout* geomatryInputLayout, Mesh& WaterMesh, Mesh& cubeMesh, ID3D11Buffer*& perFrameConstantBuffer,
+	Mesh eyeOne, Mesh platformMesh)
 {
 
 	//immidiate context is the link or "adapter" to the hardwere. This is the thing that makes you see shit on the screen. 
@@ -64,9 +66,12 @@ void geomatryPass(ID3D11DeviceContext* immediateContext, ID3D11RenderTargetView*
 	//immediateContext->Draw(6, 0);
 
 	objObject.drawObjModel(immediateContext, perFrameConstantBuffer, deferred, vertexShader, pixelShader, sampler, pPixelConstantBuffer, camera);
-	//objObject2.drawObjModel(immediateContext, perFrameConstantBuffer, deferred, vertexShader, pixelShader, sampler, pPixelConstantBuffer, camera);
+	objObject2.drawObjModel(immediateContext, perFrameConstantBuffer, deferred, vertexShader, pixelShader, sampler, pPixelConstantBuffer, camera);
 	WaterMesh.drawObjModel(immediateContext, perFrameConstantBuffer, deferred, vertexShader, pixelShader, sampler, pPixelConstantBuffer, camera);
 	cubeMesh.drawObjModel(immediateContext, perFrameConstantBuffer, deferred, vertexShader, pixelShader, sampler, pPixelConstantBuffer, camera);
+
+	eyeOne.drawObjModel(immediateContext, perFrameConstantBuffer, deferred, vertexShader, pixelShader, sampler, pPixelConstantBuffer, camera);
+	platformMesh.drawObjModel(immediateContext, perFrameConstantBuffer, deferred, vertexShader, pixelShader, sampler, pPixelConstantBuffer, camera);
 }
 
 void lightPass(ID3D11DeviceContext* immediateContext, ID3D11RenderTargetView* renderTargetView,
@@ -145,7 +150,7 @@ int	CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 	// Camera
 	//-----------------------------------------------------------------//
 
-	Camera* walkingCamera = new Camera({ 0.0f, 2.0f, 0.0f }, { 0.0f, 0.0f, 1.0f }, { 0.0f, 1.0f, 0.0f }, WIDTH, HEIGHT);
+	Camera* walkingCamera = new Camera({ -6.0f, 5.0f, 4.0f }, { 0.0f, 0.0f, 1.0f }, { 0.0f, 1.0f, 0.0f }, WIDTH, HEIGHT);
 	walkingCamera->setWindowForMouse(windowHandle);
 
 
@@ -218,12 +223,12 @@ int	CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 	//-----------------------------------------------------------------//
 	//I'll use this as my shadow light. 
 	Light light;
-	light.position       = DirectX::XMFLOAT4(0.0f, 10.0f, -0.0f, 1.0f); // X+ = >, Z+ = ^
+	light.position       = DirectX::XMFLOAT4(0.0f, 10.0f, 0.0f, 1.0f); // X+ = >, Z+ = ^
 	light.attenuation    = DirectX::XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f);
-	light.ambient        = DirectX::XMFLOAT4(0.2f, 0.2f, 0.2f, 1.0f);
+	light.ambient        = DirectX::XMFLOAT4(0.1f, 0.1f, 0.1f, 1.0f);
 	light.diffuse        = DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
 	light.cameraPosition = DirectX::XMFLOAT4(DirectX::XMVectorGetX(walkingCamera->getCameraPos()), DirectX::XMVectorGetY(walkingCamera->getCameraPos()), DirectX::XMVectorGetZ(walkingCamera->getCameraPos()), 1.0f);
-	light.direction      = DirectX::XMFLOAT4(0.5f, -1.0f, 0.0f, 0.0f);
+	light.direction      = DirectX::XMFLOAT4(0.0f, -0.99995f, 0.009999f, 0.0f);
 	light.range = 100.0f;
 
 
@@ -290,7 +295,7 @@ int	CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 	//-----------------------------------------------------------------//
 
 	//Particle system stuff
-	DirectX::XMFLOAT4 particlePosition(0, 10, 0, 1);
+	DirectX::XMFLOAT4 particlePosition(-30, 10, -30, 1);
 	Particle particleList[MAX_PARTICLES];
 	ParticleSystem particles;
 	particles.InitializeParticles(pDevice, particleList, particlePosition);
@@ -330,30 +335,44 @@ int	CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 	// Load Models
 	//-----------------------------------------------------------------//
 
+	//Mesh Objects
 	ID3D11SamplerState* objSampler;
 	Mesh heightPlaneMesh(pDevice); 
 	Mesh houseMesh(pDevice);
 	Mesh waterMesh(pDevice);
 	Mesh cubeMesh(pDevice);
+	Mesh eyeBall1(pDevice);
+	Mesh platformMesh(pDevice);
 
+	//File Paths
 	std::wstring fileName = L"Objects/House.obj";
 	std::wstring fileName2 = L"Objects/HightPlane.obj";
 	std::wstring waterMeshPath = L"Objects/WaterMesh.obj";
-	std::wstring cubePath = L"Objects/Cube.obj";
-	std::wstring filePath = L"Objects/";
-	
+	std::wstring cubePath = L"Objects/Boll.obj";
+	std::wstring eyeOneFile = L"Objects/EyeBall1.obj";
+	std::wstring platFormFile = L"Objects/Platform.obj";
 
+	std::wstring filePath = L"Objects/";
+
+	//Set file paths
 	heightPlaneMesh.setFilePath(filePath);
 	houseMesh.setFilePath(filePath);
 	waterMesh.setFilePath(filePath);
 	cubeMesh.setFilePath(filePath);
+	eyeBall1.setFilePath(filePath);
+	platformMesh.setFilePath(filePath);
 
+	//Load models
 	heightPlaneMesh.loadObjModel(pDevice, fileName2, false, true);
-	//houseMesh.loadObjModel(pDevice, fileName, false, true); //False = normalerna hamnar på fel håll men specular funkar??
+	houseMesh.loadObjModel(pDevice, fileName, false, true); //False = normalerna hamnar på fel håll men specular funkar??
 	waterMesh.loadObjModel(pDevice, waterMeshPath, false, true);
 	cubeMesh.loadObjModel(pDevice, cubePath, false, true);
+	eyeBall1.loadObjModel(pDevice, eyeOneFile, false, true);
+	platformMesh.loadObjModel(pDevice, platFormFile, false, true);
 
 	waterMesh.Animation(true);
+	cubeMesh.Animation(true);
+	cubeMesh.FollowMe(true);
 
 	HeightMap heightMap("Objects/HeightMap.png");
 
@@ -400,6 +419,7 @@ int	CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 			// Update Camera Y Position in respect to Height Map
 			//-----------------------------------------------------------------//
 
+
 			setPerFrameMatrixes(perframeMatrixes, walkingCamera, immediateContext, pPerFrameConstantBuffer);
 
 			float x = DirectX::XMVectorGetX(walkingCamera->getCameraPos());
@@ -439,6 +459,11 @@ int	CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 			// Geomatry pass and Light pass Update
 			//-----------------------------------------------------------------//
 
+			immediateContext->RSSetViewports(1, &viewPort); //Is needed at top always. 
+			immediateContext->PSSetSamplers(1,1,shadowMap.depthMap.samplerState.GetAddressOf());
+			shadowMap.depthMap.samplerState;
+
+
 			geomatryPass
 			(
 				immediateContext,
@@ -462,19 +487,22 @@ int	CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 				geomatryInputLayout,
 				waterMesh,
 				cubeMesh,
-				pPerFrameConstantBuffer
+				pPerFrameConstantBuffer,
+				eyeBall1,
+				platformMesh
 
 			);
 			
 
 			//Draw shadow here maybe?
 			shadowMap.shadowPass(&light, pShadowConstantBuffer, ShadowVertexShader, shadowInputLayout); //Stuff that happenes in the ShadowMap class.
-
 			//Stuff that happenes in the Mesh class.
 			cubeMesh.DrawShadow(immediateContext, walkingCamera, pPerFrameConstantBuffer);
-			//houseMesh.DrawShadow(immediateContext, walkingCamera, pPerFrameConstantBuffer);
-			waterMesh.DrawShadow(immediateContext, walkingCamera, pPerFrameConstantBuffer);
-			heightPlaneMesh.DrawShadow(immediateContext, walkingCamera, pPerFrameConstantBuffer);
+			houseMesh.DrawShadow(immediateContext, walkingCamera, pPerFrameConstantBuffer);
+			//waterMesh.DrawShadow(immediateContext, walkingCamera, pPerFrameConstantBuffer);
+			//heightPlaneMesh.DrawShadow(immediateContext, walkingCamera, pPerFrameConstantBuffer);
+			eyeBall1.DrawShadow(immediateContext, walkingCamera, pPerFrameConstantBuffer);
+			platformMesh.DrawShadow(immediateContext, walkingCamera, pPerFrameConstantBuffer);
 			
 			lightPass
 			(
@@ -501,6 +529,8 @@ int	CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 
 			);
 			
+
+
 			particles.particlePass(immediateContext, walkingCamera);
 
 			//Shows the front buffer
