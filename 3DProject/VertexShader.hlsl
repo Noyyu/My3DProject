@@ -7,17 +7,18 @@
 // u – for unordered accessviews (UAV)
 // b – for constant bufferviews (CBV)
 
-struct Matrixes
+struct Matrixes 
 {
     float4x4 WorldViewProjection; //Kameran Matrix
     float4x4 World;
+    row_major matrix WorldInverseTransposeMatrix; //This might have to be a row_major matrix;
     float time;
     int hasTexture;
     int hasNormal;
     int animated;
 };
 
-cbuffer constantBuffer
+cbuffer constantBuffer : register(b0)
 {
     Matrixes matrixes;
 };
@@ -47,7 +48,7 @@ VertexShaderOutput main(VertexShaderInput input)
     float speed = 0.0005;
     
     float4 tangentWS = normalize(mul(input.tangent, matrixes.World));
-    float4 normalWS = mul(input.normal, matrixes.World);
+    float4 normalWS = mul(input.normal, matrixes.WorldInverseTransposeMatrix);
     
     output.position = mul(float4(input.position, 1.0f), matrixes.WorldViewProjection); //converts position to projection space
     

@@ -13,9 +13,6 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
-    <Filter Include="Buffers">
-      <UniqueIdentifier>{a1c18004-178a-4b31-9812-7bb04d4328c2}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Resource Files\Particle">
       <UniqueIdentifier>{618f640e-f2b7-4369-ab64-7351157a7fd1}</UniqueIdentifier>
     </Filter>
@@ -42,17 +39,8 @@
     <ClInclude Include="Structs.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="VertexBuffer.h">
-      <Filter>Buffers</Filter>
-    </ClInclude>
     <ClInclude Include="pch.h">
       <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="IndexBuffer.h">
-      <Filter>Buffers</Filter>
-    </ClInclude>
-    <ClInclude Include="ConstantBuffer.h">
-      <Filter>Buffers</Filter>
     </ClInclude>
     <ClInclude Include="HeightMap.h">
       <Filter>Header Files</Filter>
@@ -83,15 +71,6 @@
     <ClCompile Include="Mesh.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="VertexBuffer.cpp">
-      <Filter>Buffers</Filter>
-    </ClCompile>
-    <ClCompile Include="IndexBuffer.cpp">
-      <Filter>Buffers</Filter>
-    </ClCompile>
-    <ClCompile Include="ConstantBuffer.cpp">
-      <Filter>Buffers</Filter>
-    </ClCompile>
     <ClCompile Include="HeightMap.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -119,9 +98,6 @@
       <Filter>Resource Files</Filter>
     </FxCompile>
     <FxCompile Include="GeomatryShader.hlsl">
-      <Filter>Resource Files</Filter>
-    </FxCompile>
-    <FxCompile Include="ComputeShader.hlsl">
       <Filter>Resource Files</Filter>
     </FxCompile>
     <FxCompile Include="ParticleVertexShader.hlsl">

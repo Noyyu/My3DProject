@@ -192,7 +192,7 @@ bool ShadowMap::CreateConstantBufferSM(ID3D11Buffer*& pShadowConstantBuffer)
 
 
 
-bool ShadowMap::LoadShadowShaders(ID3D11Device* device, ID3D11VertexShader*& VertexShader, std::string& vertexShaderByteCode)
+bool ShadowMap::LoadShadowShaders(ID3D11Device*& device, ID3D11VertexShader*& VertexShader, std::string& vertexShaderByteCode)
 {
 	std::string pixelShaderData;
 
@@ -207,8 +207,6 @@ bool ShadowMap::LoadShadowShaders(ID3D11Device* device, ID3D11VertexShader*& Ver
 
 	return true;
 }
-
-
 
 
 bool ShadowMap::LoadShaderData(const std::string& filename, std::string& shaderByteCode)
@@ -229,12 +227,6 @@ bool ShadowMap::LoadShaderData(const std::string& filename, std::string& shaderB
 	reader.close();
 
 	return true;
-}
-
-void ShadowMap::ShutDownShadows()
-{
-	device->Release();
-	deviceContext->Release();
 }
 
 void ShadowMap::CreateShadowSampler()

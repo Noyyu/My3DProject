@@ -26,13 +26,14 @@ struct Matrixes
 {
     float4x4 WorldViewProjection;
     float4x4 World;
+    float4x4 WorldInverseTransposeMatrix; //This might have to be a row_major matrix;
     float time;
     int hasTexture;
     int hasNormal;
     int animated;
 };
 
-cbuffer constantBuffer
+cbuffer constantBuffer : register(b0)
 {
     Matrixes matrixes;
 };

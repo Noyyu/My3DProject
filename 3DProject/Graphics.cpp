@@ -5,14 +5,12 @@
 #include "stb_image.h"
 
 Graphics::Graphics(UINT width, UINT height, HWND windowHandle, ID3D11Device*& pDevice, ID3D11DeviceContext*& immediateContext,
-	IDXGISwapChain*& pSwapChain, ID3D11RenderTargetView*& renderTargetView, ID3D11Texture2D*& depthTexture,
-	ID3D11DepthStencilView*& depthView, D3D11_VIEWPORT& viewport, ID3D11VertexShader*& VertexShader, ID3D11PixelShader*& pixelShader,
-	std::string& vertexShaderByteCode, ID3D11Buffer*& vertexBuffer, ID3D11InputLayout*& inputLayout,
-	ID3D11Buffer*& pConstantBuffer, ID3D11Texture2D*& texture, ID3D11ShaderResourceView*& textureSRV,
-	ID3D11SamplerState*& sampler, Light& light, ID3D11Buffer*& pPixelConstantBuffer, constantBufferMatrixes matrixes, 
-	ID3D11Buffer*& FullScreenVertexBuffer, ID3D11VertexShader*& finalPassVertexShader, ID3D11PixelShader*& finalPassPixelShader, 
-	ID3D11InputLayout*& lightPassInputLayout, std::string& lightPassVertexShaderByteCode, ID3D11RasterizerState*& rasState, 
-	ID3D11RasterizerState*& rasStateNoCulling, ID3D11GeometryShader*& geomatryShader, ID3D11InputLayout*& geomatryInputLayout, ID3D11Buffer*& pPerFrameConstantBuffer, PerFrameMatrixes perFrameStruct)
+	IDXGISwapChain*& pSwapChain, ID3D11RenderTargetView*& renderTargetView, D3D11_VIEWPORT& viewport, ID3D11VertexShader*& VertexShader, 
+	ID3D11PixelShader*& pixelShader, std::string& vertexShaderByteCode, ID3D11InputLayout*& inputLayout,ID3D11Buffer*& pConstantBuffer,
+	ID3D11SamplerState*& sampler, Light& light, ID3D11Buffer*& pPixelConstantBuffer, constantBufferMatrixes matrixes, ID3D11Buffer*& FullScreenVertexBuffer,
+	ID3D11VertexShader*& finalPassVertexShader, ID3D11PixelShader*& finalPassPixelShader,std::string& lightPassVertexShaderByteCode, 
+	ID3D11RasterizerState*& rasState, ID3D11RasterizerState*& rasStateNoCulling, ID3D11GeometryShader*& geomatryShader, 
+	ID3D11Buffer*& pPerFrameConstantBuffer, PerFrameMatrixes perFrameStruct)
 {
 	//... SETING UP D3D11 THINGS ...//
 	//////////////////////////////
@@ -39,9 +37,6 @@ Graphics::Graphics(UINT width, UINT height, HWND windowHandle, ID3D11Device*& pD
 	//... Create constant buffer for pixel shader (Light buffer) // 
 	createPixelConstantBuffer(pDevice, light, pPixelConstantBuffer);
 
-	//... Create Texture //
-	createTexture(pDevice, texture, textureSRV);
-
 	//... Create  Sampler //
 	createSamplerState(pDevice, sampler);
 
@@ -50,9 +45,6 @@ Graphics::Graphics(UINT width, UINT height, HWND windowHandle, ID3D11Device*& pD
 
 	//... Creating input layer //
 	createInputLayout(pDevice, inputLayout, vertexShaderByteCode);
-
-	//... Creating vertexBuffer //
-	quadVertexBuffer(pDevice, vertexBuffer);
 
 	//... Creates the full screen quad //
 	fullScreenQuadVertexBuffer(pDevice, FullScreenVertexBuffer);
@@ -74,10 +66,6 @@ bool Graphics::createInterface(UINT width, UINT height, HWND windowHandle, IDXGI
 	swapChainDesc.BufferDesc.Width = width; // The width and height is set to 0 to tell the thing "Look at the window, you figure it out." Never mind ima try this instead
 	swapChainDesc.BufferDesc.Height = height;
 	swapChainDesc.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM; //Pixel layout, RGBA 8 bit
-	//swapChainDesc.BufferDesc.RefreshRate.Numerator = 0;
-	//swapChainDesc.BufferDesc.RefreshRate.Denominator = 0;
-	//swapChainDesc.BufferDesc.Scaling = DXGI_MODE_SCALING_UNSPECIFIED; //specify scaling, we do not need scaling
-
 	swapChainDesc.BufferDesc.ScanlineOrdering = DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED; //Scaning order (in what way it will scan the screen to get information kind of)
 
 	swapChainDesc.SampleDesc.Count = 1; //anti aliasing (no anti aliasing)
@@ -108,7 +96,7 @@ bool Graphics::createInterface(UINT width, UINT height, HWND windowHandle, IDXGI
 	return !(FAILED(hr));
 }
 
-bool Graphics::createRenderTargetView(IDXGISwapChain*& pSwapChain, ID3D11Device* pDevice, ID3D11RenderTargetView*& renderTargetView) //Has something to do with the backbuffer
+bool Graphics::createRenderTargetView(IDXGISwapChain*& pSwapChain, ID3D11Device*& pDevice, ID3D11RenderTargetView*& renderTargetView) //Has something to do with the backbuffer
 {
 	// Gains access to texture subresource in swap chain (back buffer)
 	ID3D11Texture2D* pBackBuffer = nullptr;
@@ -122,40 +110,7 @@ bool Graphics::createRenderTargetView(IDXGISwapChain*& pSwapChain, ID3D11Device*
 
 }
 
-bool Graphics::quadVertexBuffer(ID3D11Device* pDevice, ID3D11Buffer*& vertexBuffer) //Vertex buffer
-{
-	Vertex quad[6] =
-	{
-		//Position				      //color		      //UV                      //Normal
-		{{DirectX::XMFLOAT3{-0.5, 0.5, 0.0 }}, {DirectX::XMFLOAT3{1,0,0}}, {DirectX::XMFLOAT2{ 0.0f, 0.0f }}, {DirectX::XMFLOAT3{ 0.0, 0.0, -1.0 }}, {DirectX::XMFLOAT3{0,0,1}}},  // Top left
-
-		{{DirectX::XMFLOAT3{ 0.5, 0.5, 0.0 }}, {DirectX::XMFLOAT3{0,1,0}}, {DirectX::XMFLOAT2{ 1.0f, 0.0f }}, {DirectX::XMFLOAT3{ 0.0, 0.0, -1.0 }}, {DirectX::XMFLOAT3{0,0,1}}}, // Top right
-
-		{{DirectX::XMFLOAT3{-0.5,-0.5, 0.0 }}, {DirectX::XMFLOAT3{0,0,1}}, {DirectX::XMFLOAT2{ 0.0f, 1.0f }}, {DirectX::XMFLOAT3{ 0.0, 0.0, -1.0 }}, {DirectX::XMFLOAT3{0,0,1}}}, // Bottom left
-
-
-		{{DirectX::XMFLOAT3{-0.5,-0.5, 0.0 }}, {DirectX::XMFLOAT3{0,0,1}}, {DirectX::XMFLOAT2{ 0.0f, 1.0f }}, {DirectX::XMFLOAT3{ 0.0, 0.0, -1.0 }}, {DirectX::XMFLOAT3{0,0,1}}}, // Bottom left
-
-		{{DirectX::XMFLOAT3{ 0.5, 0.5, 0.0 }}, {DirectX::XMFLOAT3{0,1,0}}, {DirectX::XMFLOAT2{ 1.0f, 0.0f }}, {DirectX::XMFLOAT3{ 0.0, 0.0, -1.0 }}, {DirectX::XMFLOAT3{0,0,1}}}, // Top right
-
-		{{DirectX::XMFLOAT3{ 0.5,-0.5, 0.0 }}, {DirectX::XMFLOAT3{1,0,0}}, {DirectX::XMFLOAT2{ 1.0f, 1.0f }}, {DirectX::XMFLOAT3{ 0.0, 0.0, -1.0 }}, {DirectX::XMFLOAT3{0,0,1}}}  // Bottom right
-	};
-
-	//Create the buffer and configurate it
-	D3D11_BUFFER_DESC bufferDesc = { 0 };
-	bufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER; // Bind a buffer as a vertex buffer to the input-assembler stage.
-	bufferDesc.Usage = D3D11_USAGE_DEFAULT; //requiers read and write acces to the GPU
-	bufferDesc.CPUAccessFlags = 0;
-	bufferDesc.MiscFlags = 0;
-	bufferDesc.ByteWidth = sizeof(quad);
-	bufferDesc.StructureByteStride = sizeof(Vertex);
-	D3D11_SUBRESOURCE_DATA subresourceData = { 0 };
-	subresourceData.pSysMem = quad;
-	HRESULT hr = pDevice->CreateBuffer(&bufferDesc, &subresourceData, &vertexBuffer);
-	return !FAILED(hr);
-}
-
-bool Graphics::fullScreenQuadVertexBuffer(ID3D11Device* pDevice, ID3D11Buffer*& vertexBuffer)
+bool Graphics::fullScreenQuadVertexBuffer(ID3D11Device*& pDevice, ID3D11Buffer*& vertexBuffer)
 {
 	Vertex quad[6] =
 	{
@@ -188,7 +143,7 @@ bool Graphics::fullScreenQuadVertexBuffer(ID3D11Device* pDevice, ID3D11Buffer*& 
 	return !FAILED(hr);
 }
 
-bool Graphics::loadShader(ID3D11Device* device, ID3D11VertexShader*& VertexShader, ID3D11PixelShader*& pixelShader, std::string& vertexShaderByteCode, ID3D11GeometryShader*& geomatryShader)
+bool Graphics::loadShader(ID3D11Device*& device, ID3D11VertexShader*& VertexShader, ID3D11PixelShader*& pixelShader, std::string& vertexShaderByteCode, ID3D11GeometryShader*& geomatryShader)
 {
 	///------ GEOMATRY PASS SHADERS ------///
 
@@ -222,7 +177,7 @@ bool Graphics::loadShader(ID3D11Device* device, ID3D11VertexShader*& VertexShade
 	}
 }
 
-bool Graphics::loadLightPassShaders(ID3D11Device* device, std::string& lightPassVertexShaderByteCode, ID3D11VertexShader*& finalPassVertexShader, ID3D11PixelShader*& finalPassPixelShader)
+bool Graphics::loadLightPassShaders(ID3D11Device*& device, std::string& lightPassVertexShaderByteCode, ID3D11VertexShader*& finalPassVertexShader, ID3D11PixelShader*& finalPassPixelShader)
 {
 	///------ LIGHT PASS SHADERS ------///
 
@@ -262,7 +217,7 @@ void Graphics::setViewport(D3D11_VIEWPORT& viewport, UINT width, UINT height)
 	viewport.MaxDepth = 1;
 }
 
-bool Graphics::createConstantBuffer(ID3D11Device* pDevice, ID3D11Buffer*& pConstantBuffer, constantBufferMatrixes matrixes)
+bool Graphics::createConstantBuffer(ID3D11Device*& pDevice, ID3D11Buffer*& pConstantBuffer, constantBufferMatrixes matrixes)
 {
 	//Information about D3D11_BUFFER_DESC https://docs.microsoft.com/en-us/windows/win32/api/d3d11/ns-d3d11-d3d11_buffer_desc
 	D3D11_BUFFER_DESC constantBufferDesc = {};
@@ -286,7 +241,7 @@ bool Graphics::createConstantBuffer(ID3D11Device* pDevice, ID3D11Buffer*& pConst
 	return !FAILED(hr);
 }
 
-bool Graphics::createPixelConstantBuffer(ID3D11Device* pDevice, Light& light, ID3D11Buffer*& pPixelConstantBuffer) //Light buffer
+bool Graphics::createPixelConstantBuffer(ID3D11Device*& pDevice, Light& light, ID3D11Buffer*& pPixelConstantBuffer) //Light buffer
 {
 	//Information about D3D11_BUFFER_DESC https://docs.microsoft.com/en-us/windows/win32/api/d3d11/ns-d3d11-d3d11_buffer_desc
 	D3D11_BUFFER_DESC constantBufferDesc = {};
@@ -305,49 +260,7 @@ bool Graphics::createPixelConstantBuffer(ID3D11Device* pDevice, Light& light, ID
 	return !FAILED(hr);
 }
 
-bool Graphics::createTexture(ID3D11Device* device, ID3D11Texture2D*& texture, ID3D11ShaderResourceView*& textureSRV)
-{
-	int textureWidth = 0;
-	int textureHeight = 0;
-	int channels = 0;
-
-	unsigned char* image = stbi_load("sadBoii.png", &textureWidth, &textureHeight, &channels, STBI_rgb_alpha);
-	if (image == nullptr)
-	{
-		return false;
-	}
-
-	D3D11_TEXTURE2D_DESC desc = {};
-	desc.Width = textureWidth;
-	desc.Height = textureHeight;
-	desc.MipLevels = 1; // Use 1 for a multisampled texture
-	desc.ArraySize = 1; //One buffer
-	desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-	desc.SampleDesc.Count = 1; // The number of multisamples per pixel.
-	desc.SampleDesc.Quality = 0;
-	desc.Usage = D3D11_USAGE_IMMUTABLE;//can only be read by the GPU and can not the written by the GPU. 
-	desc.BindFlags = D3D11_BIND_SHADER_RESOURCE; // Bind a buffer or texture to a shader stage
-	desc.CPUAccessFlags = 0;
-	desc.MiscFlags = 0;
-
-	//Information about D3D11_SUBRESOURCE_DATA https://docs.microsoft.com/en-us/windows/win32/api/d3d11/ns-d3d11-d3d11_subresource_data
-	D3D11_SUBRESOURCE_DATA data = {};
-	data.pSysMem = image;
-	data.SysMemPitch = textureWidth * 4;
-	data.SysMemSlicePitch = 0;
-
-	if (FAILED(device->CreateTexture2D(&desc, &data, &texture)))
-	{
-		return false;
-	}
-	stbi_image_free(image);
-
-	HRESULT hr = device->CreateShaderResourceView(texture, nullptr, &textureSRV);
-	assert(SUCCEEDED(hr));
-	return !FAILED(hr);
-}
-
-bool Graphics::createSamplerState(ID3D11Device* device, ID3D11SamplerState*& sampler)
+bool Graphics::createSamplerState(ID3D11Device*& device, ID3D11SamplerState*& sampler)
 {
 	//Information about D3D11_SAMPLER_DESC https://docs.microsoft.com/en-us/windows/win32/api/d3d11/ns-d3d11-d3d11_sampler_desc
 	D3D11_SAMPLER_DESC desc = {};
@@ -365,7 +278,7 @@ bool Graphics::createSamplerState(ID3D11Device* device, ID3D11SamplerState*& sam
 	return !FAILED(hr);
 }
 
-bool Graphics::createInputLayout(ID3D11Device* device, ID3D11InputLayout*& inputLayout, const std::string& vertexShaderByteCode)
+bool Graphics::createInputLayout(ID3D11Device*& device, ID3D11InputLayout*& inputLayout, const std::string& vertexShaderByteCode)
 {
 	//I should get some sort of polygon count here
 
@@ -407,7 +320,7 @@ bool Graphics::loadShaderData(const std::string& filename, std::string& shaderBy
 	return true;
 }
 
-bool Graphics::createRasterizerStates(ID3D11Device* device, ID3D11RasterizerState* rasState, ID3D11RasterizerState* rasStateNoCulling, ID3D11DeviceContext*& immediateContext)
+bool Graphics::createRasterizerStates(ID3D11Device*& device, ID3D11RasterizerState*& rasState, ID3D11RasterizerState*& rasStateNoCulling, ID3D11DeviceContext*& immediateContext)
 {
 	D3D11_RASTERIZER_DESC rasStateDesc;
 	ZeroMemory(&rasStateDesc, sizeof(D3D11_RASTERIZER_DESC));
@@ -443,10 +356,11 @@ bool Graphics::createRasterizerStates(ID3D11Device* device, ID3D11RasterizerStat
 
 	//Set default state
 	immediateContext->RSSetState(rasStateNoCulling);
+	//immediateContext->RSSetState(rasState);
 	return true;
 }
 
-bool Graphics::createPerFrameBuffer(ID3D11Device* pDevice, ID3D11Buffer*& pPerFrameConstantBuffer, PerFrameMatrixes perFrameStruct)
+bool Graphics::createPerFrameBuffer(ID3D11Device*& pDevice, ID3D11Buffer*& pPerFrameConstantBuffer, PerFrameMatrixes perFrameStruct)
 {
 	//Information about D3D11_BUFFER_DESC https://docs.microsoft.com/en-us/windows/win32/api/d3d11/ns-d3d11-d3d11_buffer_desc
 	D3D11_BUFFER_DESC constantBufferDesc = {};

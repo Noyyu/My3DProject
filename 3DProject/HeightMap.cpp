@@ -26,6 +26,7 @@ void HeightMap::readImageData()
 	float y = 0;
 	float z = 0;
 
+
 	//Create locations for every pixel in the texture map in the 3D space. 
 	for (int j = 0; j < textureHeight; j++)
 	{
@@ -40,6 +41,8 @@ void HeightMap::readImageData()
 			this->vertexPosition.emplace_back(tempVertexPosition);
 		}
 	}
+
+	stbi_image_free(textureData);
 }
 
 float HeightMap::getHegihtOnPosition(float x, float z)

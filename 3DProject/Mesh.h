@@ -1,60 +1,52 @@
 #include "Structs.h"
 #include "Camera.h"
-#include "VertexBuffer.h"
-#include "IndexBuffer.h"
-#include "ConstantBuffer.h"
-
-
 
 class Mesh
 {
 private:
 
 	std::wstring filePath;
-	float time = 0;
+	float time;
 
 	std::vector<DWORD> indices; // DWORD https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-dtyp/262627d8-3418-4627-9218-4ffe110850b2
-	int totalVertices = 0;
-	int meshSubsets = 0;
-	bool hasNormalMap = false;
-	int animation = 0;
-	int followMe = 0;
-	int move=0;
+	int totalVertices;
+	int meshSubsets;
+	bool hasNormalMap;
+	int animation;
+	int followMe;
+	int move;
 
 	constantBufferMatrixes objMats;
 	MatrixFunctions matrixFunction;
 
-	std::vector<int> meshSubsetIndexStart = {};
-	std::vector<int> meshSubsetTexture = {};
-	std::vector<int> meshSubsetMaterialArray = {};
+	std::vector<int> meshSubsetIndexStart;
+	std::vector<int> meshSubsetTexture;
+	std::vector<int> meshSubsetMaterialArray;
 
-	ID3D11Texture2D* mtlTexture = {};
-	ID3D11Texture2D* mtlNormalTexture = {};
-	ID3D11ShaderResourceView* mtlShaderResourceView = {};
-	ID3D11ShaderResourceView* mtlNormalShaderResourceView = {};
-	ID3D11RenderTargetView* mtlRenderTargetView = {};
+	ComPtr<ID3D11Texture2D> mtlTexture;
+	ComPtr<ID3D11Texture2D> mtlNormalTexture;
+	ComPtr<ID3D11ShaderResourceView> mtlShaderResourceView;
+	ComPtr<ID3D11ShaderResourceView> mtlNormalShaderResourceView;
+	ComPtr<ID3D11RenderTargetView> mtlRenderTargetView;
 
-	ID3D11Buffer* meshVertexBuffer = {};
-	ID3D11Buffer* meshIndexBuffer = {};
-	ID3D11Buffer* objConstantBuffer = {};
+	ID3D11Buffer* meshVertexBuffer; //Needs to be released
+	ID3D11Buffer* meshIndexBuffer;  //Needs to be released
 
-	std::vector<SurfaceMaterial> material = {};
-	std::vector<ID3D11ShaderResourceView*> meshShaderResourceView = {};
-	std::vector<std::wstring> textureNameArray = {}; //https://www.cplusplus.com/reference/string/wstring/
+	std::vector<SurfaceMaterial> material;
+	std::vector<ID3D11ShaderResourceView*> meshShaderResourceView; //Needs to be released
+	std::vector<std::wstring> textureNameArray; //https://www.cplusplus.com/reference/string/wstring/
 
 public:
 
-	Mesh(ID3D11Device* pDevice);
+	Mesh(ID3D11Device*& pDevice);
 	virtual ~Mesh() = default;
 	void setFilePath(std::wstring filePath);
 	bool loadObjModel(ID3D11Device*& device, std::wstring fileName, bool isRightHandCoordSystem, bool computeNormals);
 
-	void drawObjModel(ID3D11DeviceContext*& immediateContext, ID3D11Buffer*& pConstantBuffer, Deferred deferred,
-		ID3D11VertexShader* vertexShader, ID3D11PixelShader* pixelShader, ID3D11SamplerState* sampler, ID3D11Buffer*& pPixelConstantBuffer, Camera* camera);
+	void drawObjModel(ID3D11DeviceContext*& immediateContext, ID3D11Buffer*& pConstantBuffer, Deferred &deferred,
+		ID3D11VertexShader*& vertexShader, ID3D11PixelShader*& pixelShader, ID3D11SamplerState*& sampler, ID3D11Buffer*& pPixelConstantBuffer, Camera*& camera);
 
 	void DrawShadow(ID3D11DeviceContext*& immediateContext, Camera*& camera, ID3D11Buffer*& pConstantBuffer);
-
-	void createObjectConstantBuffer(ID3D11Device* device); //Not used
 
 	//Create a draw shadow function here maybe. 
 	void shutDownMesh();

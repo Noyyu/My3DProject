@@ -7,14 +7,20 @@ LRESULT CALLBACK WindowProc(HWND windowHandle, UINT msg, WPARAM wParam, LPARAM l
 	//Switch on message id
 	switch (msg)
 	{
-	case WM_DESTROY:
-	
-		PostQuitMessage(0);
-	
+
 	//When the WM_CLOSE is sent, //Function that makes the application close as you close the window
+	case WM_DESTROY:
+		//post a quit message
+		PostQuitMessage(0);
+		DestroyWindow(windowHandle);
+		return 0;
+		break;
+
 	case WM_CLOSE:
 		//post a quit message
 		PostQuitMessage(0);
+		DestroyWindow(windowHandle);
+		return 0;
 		break;
 	
 	
@@ -62,6 +68,8 @@ LRESULT CALLBACK WindowProc(HWND windowHandle, UINT msg, WPARAM wParam, LPARAM l
 		{
 
 		}
+		break;
+	default:
 		break;
 	}
 	
@@ -135,6 +143,7 @@ bool setUpCMD()
 	FILE* fp = _fdopen(hConsole, "w");
 	freopen_s(&fp, "CONOUT$", "w", stdout); //Så cout syns i konsol fönstret
 	freopen_s(&fp, "CONOUT$", "w", stderr); // Så cerr syns i konsol fönstret
+	return true;
 }
 
 

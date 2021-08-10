@@ -111,7 +111,7 @@ float4 main(in PSInput input) : sv_Target ////Skriver SV_OutputControlPointID ti
     positionL.xy /= positionL.w; //ndc?
     float2 smTex = float2(0.5f * positionL.x + 0.5f, -0.5f * positionL.y + 0.5f);
     float depth = positionL.z / positionL.w;
-    float bias = 0.001f;
+    float bias = 0.03f;
     
     float dx = 1.0f / 640; // this must be the same as the texture size!!
     float dy = 1.0f / 640; //ditto

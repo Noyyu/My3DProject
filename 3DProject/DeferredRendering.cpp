@@ -10,16 +10,12 @@ Deferred::Deferred()
 	normalTargetView = 0; 
 	positionTargetView = 0;
 	diffuseTargetView = 0;
-	depthTargetView = 0;
 
 	normalResourceView = 0;
 	positionResourceView = 0;
 	diffuseResourceView = 0;
-	depthResourceView = 0;
 
 	depthData = 0;
-	depthTargetView = 0;
-	depthResourceView = 0;
 
 	textureHeight = 500;
 	textureWidth = 500;
@@ -29,7 +25,7 @@ Deferred::~Deferred()
 {
 }
 
-bool Deferred::instalize(ID3D11Device* device, int textureWidth, int textureHeight, float screenDepth, float screenNear)
+bool Deferred::instalize(ID3D11Device*& device, int textureWidth, int textureHeight, float screenDepth, float screenNear)
 {
 	HRESULT result;
 	this->textureHeight = textureHeight;
@@ -142,10 +138,9 @@ void Deferred::shutDownDeferredObjects()
 	normalResourceView->Release();
 	positionResourceView->Release();
 	diffuseResourceView->Release();
-	depthResourceView->Release();
 
 	depthData->Release();
-	depthTargetView->Release();
+	depthStencilView->Release();
 
 	normalData = 0;
 	positionData = 0;
@@ -160,11 +155,10 @@ void Deferred::shutDownDeferredObjects()
 	diffuseResourceView = 0;
 
 	depthData = 0;
-	depthTargetView = 0;
-	depthResourceView = 0;
+	depthStencilView = 0;
 }
 
-void Deferred::setRenderTargets(ID3D11DeviceContext* deviceContext)
+void Deferred::setRenderTargets(ID3D11DeviceContext*& deviceContext)
 {
 	ID3D11RenderTargetView* targets[3] = { normalTargetView, positionTargetView, diffuseTargetView};
 
@@ -173,11 +167,10 @@ void Deferred::setRenderTargets(ID3D11DeviceContext* deviceContext)
 
 	// Set the viewport.
 	deviceContext->RSSetViewports(1, &viewport);
-
 	return;
 }
 
-void Deferred::clearRenderTargets(ID3D11DeviceContext* deviceContext)
+void Deferred::clearRenderTargets(ID3D11DeviceContext*& deviceContext)
 {
 	float color[4];
 
@@ -206,7 +199,7 @@ ID3D11ShaderResourceView* Deferred::getShaderResourceView(int index)
 	}
 }
 
-void Deferred::setShaderResourceView(ID3D11DeviceContext* deviceContext, ID3D11ShaderResourceView* shadowResourceView)
+void Deferred::setShaderResourceView(ID3D11DeviceContext*& deviceContext, ID3D11ShaderResourceView* shadowResourceView)
 {
 	ID3D11ShaderResourceView* targets[4] = { normalResourceView, positionResourceView, diffuseResourceView, shadowResourceView}; //Binds the textures from the geomatry pass to the light pass
 
@@ -214,14 +207,14 @@ void Deferred::setShaderResourceView(ID3D11DeviceContext* deviceContext, ID3D11S
 	deviceContext->PSSetShaderResources(0, 4, targets);
 }
 
-void Deferred::unbindShaderResourceView(ID3D11DeviceContext* deviceContext)
+void Deferred::unbindShaderResourceView(ID3D11DeviceContext*& deviceContext)
 {
 	ID3D11ShaderResourceView* const kill[4] = { nullptr };
 	deviceContext->PSSetShaderResources(0, 4, kill);
 
 }
 
-void Deferred::setLightPassRenderTarget(ID3D11RenderTargetView* renderTargetView, ID3D11DeviceContext* deviceContext)
+void Deferred::setLightPassRenderTarget(ID3D11RenderTargetView* renderTargetView, ID3D11DeviceContext*& deviceContext)
 {
 	deviceContext->OMSetRenderTargets(1, &renderTargetView, depthStencilView);
 }

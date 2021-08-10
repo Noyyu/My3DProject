@@ -114,7 +114,7 @@ void ParticleSystem::InitializeParticles(ID3D11Device*& device, Particle particl
 	LoadShader(device);
 }
 
-void ParticleSystem::particlePass(ID3D11DeviceContext* deviceContext, Camera* walkingCamera)
+void ParticleSystem::particlePass(ID3D11DeviceContext*& deviceContext, Camera*& walkingCamera)
 {
 	static UINT stride = sizeof(Particle);
 	static UINT offset = 0;
@@ -144,10 +144,10 @@ void ParticleSystem::particlePass(ID3D11DeviceContext* deviceContext, Camera* wa
 	deviceContext->GSSetConstantBuffers(0, 1, &vertexParticleConstantBuffer);
 	deviceContext->IASetVertexBuffers(0, 1, &dummyParticleBuffer,&stride,&offset);
 
-	deviceContext->VSSetShader(particleVertexShader, nullptr, 0);
-	deviceContext->CSSetShader(particleComputeShader, nullptr, 0);
-	deviceContext->GSSetShader(particleGeomatryShader, nullptr, 0);
-	deviceContext->PSSetShader(particlePixelShader, nullptr, 0);
+	deviceContext->VSSetShader(particleVertexShader.Get(), nullptr, 0);
+	deviceContext->CSSetShader(particleComputeShader.Get(), nullptr, 0);
+	deviceContext->GSSetShader(particleGeomatryShader.Get(), nullptr, 0);
+	deviceContext->PSSetShader(particlePixelShader.Get(), nullptr, 0);
 
 
 	deviceContext->CSSetUnorderedAccessViews(0, 1, particleUAV.GetAddressOf(), nullptr);
@@ -162,6 +162,7 @@ void ParticleSystem::particlePass(ID3D11DeviceContext* deviceContext, Camera* wa
 	deviceContext->VSSetShaderResources(0, 1, &nullSRV);
 	deviceContext->GSSetShader(nullptr, nullptr, 0);
 	deviceContext->CSSetShader(nullptr, nullptr, 0);
+
 }
 
 void ParticleSystem::LoadShader(ID3D11Device*& device)
@@ -217,8 +218,7 @@ void ParticleSystem::LoadShaderData(const std::string& filename, std::string& sh
 
 void ParticleSystem::ShutDownParticles()
 {
-	particleVertexShader->Release();
-	particleComputeShader->Release();
-	particleGeomatryShader->Release();
-	particlePixelShader->Release();
+	this->vertexParticleConstantBuffer->Release();
+	this->vertexParticleConstantBuffer = 0;
 }
+

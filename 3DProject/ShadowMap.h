@@ -10,21 +10,18 @@ private:
 	unsigned int textureWidth;
 	unsigned int textureHeight;
 
-	DirectX::XMFLOAT4 lightDirection;
-
-	ID3D11Device* device;
-	ID3D11DeviceContext* deviceContext;
+	ComPtr<ID3D11Device> device;
+	ComPtr<ID3D11DeviceContext> deviceContext;
 
 	DirectX::XMFLOAT4X4 lightViewProjectionMatrix;
 	DirectX::XMMATRIX lightProjectionMatrix;
 	DirectX::XMMATRIX lightViewMatrix;
-	//ID3D11SamplerState* samplerState;
-
+	DirectX::XMFLOAT4 lightDirection;
 	
 	bool CreateShadowMap();
 	bool CreateInputLayoutSM(ID3D11InputLayout*& inputLayoutSM, std::string& vertexShaderByteCode);
 	bool CreateConstantBufferSM(ID3D11Buffer*& pShadowConstantBuffer); //Is to be filled with the lightViewProjectionMatrix. Needs constant buffer.
-	bool LoadShadowShaders(ID3D11Device* device, ID3D11VertexShader*& VertexShader, std::string& vertexShaderByteCode);
+	bool LoadShadowShaders(ID3D11Device*& device, ID3D11VertexShader*& VertexShader, std::string& vertexShaderByteCode);
 	bool LoadShaderData(const std::string& filename, std::string& shaderByteCode);
 	void CreateShadowSampler();
 
@@ -48,6 +45,4 @@ public:
 
 	void shadowPass(Light* light, ID3D11Buffer*& pShadowConstantBuffer, ID3D11VertexShader* vertexShader, ID3D11InputLayout*& inputLayoutSM); //Needs constant buffer probably.
 	void SetProjectionMatrix(Light* light, ID3D11Buffer*& pShadowConstantBuffer); //needs constantbuffer
-	void ShutDownShadows();
-	//Add shut down shadow thing. 
 };

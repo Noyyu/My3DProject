@@ -94,6 +94,7 @@ struct constantBufferMatrixes
 {
 	DirectX::XMFLOAT4X4 WorldViewProjection = {};
 	DirectX::XMFLOAT4X4 World = {};
+	DirectX::XMFLOAT4X4 WorldInverseTransposeMatrix = {};
 	float time = 0;
 	int hasTexture = 0;
 	int hasNormal  = 0;

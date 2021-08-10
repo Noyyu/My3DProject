@@ -23,17 +23,18 @@ public:
 	ParticleSystem();
 	~ParticleSystem();
 	void InitializeParticles(ID3D11Device*& device, Particle particleList[], DirectX::XMFLOAT4 position);
-	void particlePass(ID3D11DeviceContext* deviceContext, Camera* walkingCamera);
+	void particlePass(ID3D11DeviceContext*& deviceContext, Camera*& walkingCamera);
+	void ShutDownParticles();
 
 private:
 
 	ParticlePerFrame particlesPerFrameMatrixes;
 	MatrixFunctions matrixFunctions;
 
-	ID3D11VertexShader* particleVertexShader;
-	ID3D11ComputeShader* particleComputeShader;
-	ID3D11GeometryShader* particleGeomatryShader;
-	ID3D11PixelShader* particlePixelShader;
+	ComPtr<ID3D11VertexShader> particleVertexShader;
+	ComPtr<ID3D11ComputeShader> particleComputeShader;
+	ComPtr<ID3D11GeometryShader> particleGeomatryShader;
+	ComPtr<ID3D11PixelShader> particlePixelShader;
 
 	ID3D11Buffer* vertexParticleConstantBuffer;
 	ComPtr <ID3D11Buffer> dummyParticleBuffer;
@@ -43,5 +44,5 @@ private:
 
 	void LoadShader(ID3D11Device*& device);
 	void LoadShaderData(const std::string& filename, std::string& shaderByteCode);
-	void ShutDownParticles();
+	
 };

@@ -4,9 +4,38 @@
 
 
 
-Mesh::Mesh(ID3D11Device* pDevice)
+Mesh::Mesh(ID3D11Device*& pDevice)
 
 {
+    this->filePath = L"";
+    this->time = 0;
+
+    this->indices = {}; // DWORD https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-dtyp/262627d8-3418-4627-9218-4ffe110850b2
+    this->totalVertices = 0;
+    this->meshSubsets = 0;
+    this->hasNormalMap = false;
+    this->animation = 0;
+    this->followMe = 0;
+    this->move = 0;
+
+    this->objMats = {};
+    this->matrixFunction = {};
+
+    this->meshSubsetIndexStart = {};
+    this->meshSubsetTexture = {};
+    this->meshSubsetMaterialArray = {};
+
+    //this->mtlNormalTexture = {};
+    //this->mtlShaderResourceView = {};
+    //this->mtlNormalShaderResourceView = {};
+    //this->mtlRenderTargetView = {};
+
+    this->meshVertexBuffer = {};
+    this->meshIndexBuffer = {};
+
+    std::vector<SurfaceMaterial> material = {};
+    std::vector<ID3D11ShaderResourceView*> meshShaderResourceView = {};
+    std::vector<std::wstring> textureNameArray = {}; //https://www.cplusplus.com/reference/string/wstring/
 }
 
 
@@ -689,7 +718,7 @@ bool Mesh::loadObjModel(ID3D11Device*& device, std::wstring fileName, bool isRig
                                 //if the texture is not already loaded, load it now
                                 if (!alreadyLoaded)
                                 {
-                                    ID3D11ShaderResourceView* tempMeshShaderResourceView;
+                                    //ID3D11ShaderResourceView* tempMeshShaderResourceView;
 
                                     //Use the stb lib to load the picture data and then make a D3D11Texture2D and its views (shaderResourceView, shaderTargetView)
                                     //hur fan då
@@ -729,7 +758,7 @@ bool Mesh::loadObjModel(ID3D11Device*& device, std::wstring fileName, bool isRig
 
                                     stbi_image_free(image);
 
-                                    hr = device->CreateShaderResourceView(mtlTexture, nullptr, &mtlShaderResourceView);
+                                    hr = device->CreateShaderResourceView(mtlTexture.Get(), nullptr, &mtlShaderResourceView);
                                     if (FAILED(hr)) { return false; };
 
 
@@ -737,7 +766,7 @@ bool Mesh::loadObjModel(ID3D11Device*& device, std::wstring fileName, bool isRig
                                     {
                                         textureNameArray.push_back(fileNamePath.c_str());
                                         material[materialCount - 1].textureArrayIndex = meshShaderResourceView.size();
-                                        meshShaderResourceView.push_back(mtlShaderResourceView);
+                                        meshShaderResourceView.push_back(mtlShaderResourceView.Get());
                                         material[materialCount - 1].hasTexture = true;
                                     }
                                     if (FAILED(hr)) { return false; };
@@ -815,7 +844,7 @@ bool Mesh::loadObjModel(ID3D11Device*& device, std::wstring fileName, bool isRig
                         //if the texture is not already loaded, load it now
                         if (!alreadyLoaded)
                         {
-                            ID3D11ShaderResourceView* tempMeshShaderResourceView; //Hittar inte vart denna används just nu.
+                            //ID3D11ShaderResourceView* tempMeshShaderResourceView; //Hittar inte vart denna används just nu.
 
                             //Use the stb lib to load the picture data and then make a D3D11Texture2D and its views (shaderResourceView, shaderTargetView)
                             //hur fan då
@@ -856,7 +885,7 @@ bool Mesh::loadObjModel(ID3D11Device*& device, std::wstring fileName, bool isRig
 
                             stbi_image_free(image);
 
-                            hr = device->CreateShaderResourceView(mtlNormalTexture, nullptr, &mtlNormalShaderResourceView);
+                            hr = device->CreateShaderResourceView(mtlNormalTexture.Get(), nullptr, &mtlNormalShaderResourceView);
                             if (FAILED(hr))
                             { 
                                 this->hasNormalMap = true;
@@ -868,7 +897,7 @@ bool Mesh::loadObjModel(ID3D11Device*& device, std::wstring fileName, bool isRig
                             {
                                 textureNameArray.push_back(fileNamePath.c_str());
                                 material[materialCount - 1].textureArrayIndex = meshShaderResourceView.size();
-                                meshShaderResourceView.push_back(mtlNormalShaderResourceView);
+                                meshShaderResourceView.push_back(mtlNormalShaderResourceView.Get());
                                 material[materialCount - 1].hasNormalMap = true;
                                 this->hasNormalMap = true;
                             }
@@ -1150,13 +1179,14 @@ bool Mesh::loadObjModel(ID3D11Device*& device, std::wstring fileName, bool isRig
 }
 
 
-void Mesh::drawObjModel(ID3D11DeviceContext*& immediateContext, ID3D11Buffer*& pConstantBuffer, Deferred deferred,
-    ID3D11VertexShader* vertexShader, ID3D11PixelShader* pixelShader, ID3D11SamplerState* sampler, ID3D11Buffer*& pPixelConstantBuffer, Camera* camera)
+void Mesh::drawObjModel(ID3D11DeviceContext*& immediateContext, ID3D11Buffer*& pConstantBuffer, Deferred& deferred,
+    ID3D11VertexShader*& vertexShader, ID3D11PixelShader*& pixelShader, ID3D11SamplerState*& sampler, ID3D11Buffer*& pPixelConstantBuffer, Camera*& camera)
 {
     for (int i = 0; i < meshSubsets; i++)
     {
         static UINT stride = sizeof(Vertex);
         static UINT offset = 0;
+        move += 5;
 
         //Set buffers
         immediateContext->IASetIndexBuffer(meshIndexBuffer, DXGI_FORMAT_R32_UINT, 0);
@@ -1180,6 +1210,12 @@ void Mesh::drawObjModel(ID3D11DeviceContext*& immediateContext, ID3D11Buffer*& p
 
         DirectX::XMMATRIX world = scale * translate;
 
+        //Stuff to undo the effects from translation on normals. 
+        sm::Matrix worldMatrix = DirectX::XMLoadFloat4x4(&objMats.World);
+        sm::Matrix worldInverted = worldMatrix.Invert();
+        DirectX::XMStoreFloat4x4(&objMats.WorldInverseTransposeMatrix, worldInverted.Transpose());
+
+
         this->objMats.World = matrixFunction.setWorld(world);
         this->objMats.WorldViewProjection =  matrixFunction.setWVP(world * camera->getCameraView() * camera->getCameraProjection());
 
@@ -1188,7 +1224,6 @@ void Mesh::drawObjModel(ID3D11DeviceContext*& immediateContext, ID3D11Buffer*& p
         this->objMats.animated = this->animation;
 
         immediateContext->VSSetConstantBuffers(0, 1, &pConstantBuffer);
-        //immediateContext->VSSetConstantBuffers(1,1,&)
         
         immediateContext->VSSetShader(vertexShader, nullptr, 0);
         immediateContext->PSSetShader(pixelShader, nullptr, 0);
@@ -1228,8 +1263,6 @@ void Mesh::DrawShadow(ID3D11DeviceContext*& immediateContext, Camera*& camera, I
         static UINT stride = sizeof(Vertex);
         static UINT offset = 0;
 
-        move+=5;
-
         immediateContext->IASetIndexBuffer(meshIndexBuffer, DXGI_FORMAT_R32_UINT, 0);
         immediateContext->IASetVertexBuffers(0, 1, &meshVertexBuffer, &stride, &offset);
 
@@ -1249,6 +1282,11 @@ void Mesh::DrawShadow(ID3D11DeviceContext*& immediateContext, Camera*& camera, I
 
         DirectX::XMMATRIX world = scale * translate;
 
+        //Stuff to undo the effects from translation on normals. 
+        sm::Matrix worldMatrix = DirectX::XMLoadFloat4x4(&objMats.World);
+        sm::Matrix worldInverted = worldMatrix.Invert();
+        DirectX::XMStoreFloat4x4(&objMats.WorldInverseTransposeMatrix, worldInverted.Transpose());
+
         this->objMats.World = matrixFunction.setWorld(world);
         this->objMats.WorldViewProjection = matrixFunction.setWVP(DirectX::XMMatrixTranspose(world * camera->getCameraView() * camera->getCameraProjection())); //Isn't needed really
 
@@ -1256,29 +1294,6 @@ void Mesh::DrawShadow(ID3D11DeviceContext*& immediateContext, Camera*& camera, I
         immediateContext->VSSetConstantBuffers(1, 1, &pConstantBuffer);
 
         immediateContext->DrawIndexedInstanced(indices.size(), 1, 0, 0, 0);
-    }
-}
-
-void Mesh::createObjectConstantBuffer(ID3D11Device* device)
-{
-    //Information about D3D11_BUFFER_DESC https://docs.microsoft.com/en-us/windows/win32/api/d3d11/ns-d3d11-d3d11_buffer_desc
-    D3D11_BUFFER_DESC constantBufferDesc = {};
-    constantBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-    constantBufferDesc.Usage = D3D11_USAGE_DEFAULT; //requiers read and write acces to the CPU
-    constantBufferDesc.CPUAccessFlags = 0;
-    constantBufferDesc.ByteWidth = sizeof(this->objMats);
-    constantBufferDesc.StructureByteStride = 0u;
-    D3D11_SUBRESOURCE_DATA constantSubresourceData = {};
-    constantSubresourceData.pSysMem = &this->objMats;
-
-    constantBufferDesc.MiscFlags = 0;
-    constantSubresourceData.SysMemPitch = 0;
-    constantSubresourceData.SysMemSlicePitch = 0;
-
-    HRESULT hr = device->CreateBuffer(&constantBufferDesc, &constantSubresourceData, std::addressof(this->objConstantBuffer));
-    if (FAILED(hr))
-    {
-        std::cout << "Failed to create constant buffer" << std::endl;
     }
 }
 
@@ -1296,21 +1311,11 @@ void Mesh::FollowMe(bool follow)
 
 void Mesh::shutDownMesh()
 {
-    mtlTexture->Release();
-    mtlNormalTexture->Release();
-    mtlShaderResourceView->Release();
-    mtlNormalShaderResourceView->Release();
-    mtlRenderTargetView->Release();
-    meshVertexBuffer->Release();
-    meshIndexBuffer->Release();
-    objConstantBuffer->Release();
-
-    mtlTexture = 0;
-    mtlNormalTexture = 0;
-    mtlShaderResourceView = 0;
-    mtlNormalShaderResourceView = 0;
-    mtlRenderTargetView = 0;
-    meshVertexBuffer = 0;
-    meshIndexBuffer = 0;
-    objConstantBuffer = 0;
+    //meshVertexBuffer->Release();
+    //meshIndexBuffer->Release();
+    //for (auto& it : meshShaderResourceView)
+    //    if (it != nullptr)
+    //        it->Release();
+    //Need to release the vector filled with COM objects.
+    //std::vector<ID3D11ShaderResourceView*> meshShaderResourceView;
 }
