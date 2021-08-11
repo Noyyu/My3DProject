@@ -6,6 +6,8 @@ ParticleSystem::ParticleSystem()
 
 ParticleSystem::~ParticleSystem()
 {
+	this->vertexParticleConstantBuffer->Release();
+	this->vertexParticleConstantBuffer = 0;
 }
 
 void ParticleSystem::InitializeParticles(ID3D11Device*& device, Particle particleList[], DirectX::XMFLOAT4 position)
@@ -126,23 +128,16 @@ void ParticleSystem::particlePass(ID3D11DeviceContext*& deviceContext, Camera*& 
 	DirectX::XMMATRIX translate = DirectX::XMMatrixTranslation(0, 0, 0); // X+ = >, Z+ = ^
 	DirectX::XMMATRIX world = scale * translate;
 
+	deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_POINTLIST);
+
+
 	particlesPerFrameMatrixes.viewMatrix = matrixFunctions.setWorld(DirectX::XMMatrixTranspose(walkingCamera->getCameraView()));
 	particlesPerFrameMatrixes.projectionMatrix = matrixFunctions.setWVP((DirectX::XMMatrixTranspose(walkingCamera->getCameraProjection())));
-
-	DirectX::XMFLOAT4 saveMe;
-	DirectX::XMStoreFloat4(&saveMe, walkingCamera->getCameraPos());
-
-	particlesPerFrameMatrixes.cameraPosition = saveMe;
-	
-	std::cout << saveMe.x << " " << saveMe.y << " " << saveMe.z << "\r";
-
-
 	deviceContext->UpdateSubresource(vertexParticleConstantBuffer, 0, NULL, &particlesPerFrameMatrixes, 0, 0);
-
-	deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_POINTLIST);
 
 	deviceContext->GSSetConstantBuffers(0, 1, &vertexParticleConstantBuffer);
 	deviceContext->IASetVertexBuffers(0, 1, &dummyParticleBuffer,&stride,&offset);
+
 
 	deviceContext->VSSetShader(particleVertexShader.Get(), nullptr, 0);
 	deviceContext->CSSetShader(particleComputeShader.Get(), nullptr, 0);
@@ -156,9 +151,9 @@ void ParticleSystem::particlePass(ID3D11DeviceContext*& deviceContext, Camera*& 
 	deviceContext->CSSetUnorderedAccessViews(0, 1, &nullUAV, nullptr);
 
 	deviceContext->VSSetShaderResources(0, 1, particleSRV.GetAddressOf()); //Actual vertex buffer som håller alla vertiser
-
 	deviceContext->DrawInstanced(1, MAX_PARTICLES, 0, 0);
 
+	//Kill stuff
 	deviceContext->VSSetShaderResources(0, 1, &nullSRV);
 	deviceContext->GSSetShader(nullptr, nullptr, 0);
 	deviceContext->CSSetShader(nullptr, nullptr, 0);
@@ -196,7 +191,6 @@ void ParticleSystem::LoadShader(ID3D11Device*& device)
 	{
 		std::cout << "Failed to load Particle Pixel Shader" << std::endl;
 	}
-
 }
 
 void ParticleSystem::LoadShaderData(const std::string& filename, std::string& shaderByteCode)
@@ -216,9 +210,4 @@ void ParticleSystem::LoadShaderData(const std::string& filename, std::string& sh
 	reader.close();
 }
 
-void ParticleSystem::ShutDownParticles()
-{
-	this->vertexParticleConstantBuffer->Release();
-	this->vertexParticleConstantBuffer = 0;
-}
 

@@ -47,6 +47,7 @@ private:
 public:
 	Camera();
 	Camera(DirectX::XMVECTOR cameraPos, DirectX::XMVECTOR cameraTarget, DirectX::XMVECTOR cameraUp, unsigned int WIDTH, unsigned int HEIGHT);
+	~Camera();
 
 	DirectX::XMMATRIX getCameraView();
 	DirectX::XMMATRIX getCameraProjection();

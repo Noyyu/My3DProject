@@ -24,7 +24,6 @@ public:
 	~ParticleSystem();
 	void InitializeParticles(ID3D11Device*& device, Particle particleList[], DirectX::XMFLOAT4 position);
 	void particlePass(ID3D11DeviceContext*& deviceContext, Camera*& walkingCamera);
-	void ShutDownParticles();
 
 private:
 

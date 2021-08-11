@@ -38,18 +38,16 @@ private:
 
 public:
 
-	Mesh(ID3D11Device*& pDevice);
+	Mesh();
 	virtual ~Mesh() = default;
-	void setFilePath(std::wstring filePath);
-	bool loadObjModel(ID3D11Device*& device, std::wstring fileName, bool isRightHandCoordSystem, bool computeNormals);
 
-	void drawObjModel(ID3D11DeviceContext*& immediateContext, ID3D11Buffer*& pConstantBuffer, Deferred &deferred,
-		ID3D11VertexShader*& vertexShader, ID3D11PixelShader*& pixelShader, ID3D11SamplerState*& sampler, ID3D11Buffer*& pPixelConstantBuffer, Camera*& camera);
+	void SetFilePath(std::wstring filePath);
+	bool LoadObjModel(ID3D11Device*& device, std::wstring fileName, bool computeNormals);
 
-	void DrawShadow(ID3D11DeviceContext*& immediateContext, Camera*& camera, ID3D11Buffer*& pConstantBuffer);
+	void DrawObjModel(ID3D11DeviceContext*& immediateContext, ID3D11Buffer*& pConstantBuffer, Deferred &deferred, ID3D11VertexShader*& vertexShader, ID3D11PixelShader*& pixelShader, ID3D11Buffer*& pPixelConstantBuffer, Camera* camera);
+	void DrawShadow(ID3D11DeviceContext*& immediateContext, Camera* camera, ID3D11Buffer*& pConstantBuffer);
 
 	//Create a draw shadow function here maybe. 
-	void shutDownMesh();
 	void Animation(bool animation);
 	void FollowMe(bool follow);
 

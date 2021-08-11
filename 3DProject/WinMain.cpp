@@ -25,11 +25,10 @@ void setPerFrameMatrixes(PerFrameMatrixes& object, Camera* camera, ID3D11DeviceC
 
 //Sending everytihng to the immidiate context (device context) ((screen))
 void geomatryPass(ID3D11DeviceContext*& immediateContext, D3D11_VIEWPORT& viewport, ID3D11VertexShader*& vertexShader,
-	ID3D11PixelShader*& pixelShader, ID3D11InputLayout*& inputLayout, ID3D11SamplerState*& sampler, ID3D11Buffer*& pPixelConstantBuffer, 
-	Deferred& deferred, Mesh& objObject, Camera*& camera, Mesh& objObject2, ID3D11GeometryShader*& geomatryShader, Mesh& WaterMesh, 
+	ID3D11PixelShader*& pixelShader, ID3D11InputLayout*& inputLayout, ID3D11Buffer*& pPixelConstantBuffer, 
+	Deferred& deferred, Mesh& objObject, Camera* camera, Mesh& objObject2, ID3D11GeometryShader*& geomatryShader, Mesh& WaterMesh, 
 	Mesh& cubeMesh, ID3D11Buffer*& perFrameConstantBuffer, Mesh& eyeOne, Mesh& platformMesh)
 {
-
 	//immidiate context is the link or "adapter" to the hardwere. This is the thing that makes you see shit on the screen. 
 	float clearColor[4] = { 1,1,1,1 };
 	deferred.clearRenderTargets(immediateContext);
@@ -46,13 +45,12 @@ void geomatryPass(ID3D11DeviceContext*& immediateContext, D3D11_VIEWPORT& viewpo
 
 	deferred.setRenderTargets(immediateContext);
 
-	objObject.drawObjModel(immediateContext, perFrameConstantBuffer, deferred, vertexShader, pixelShader, sampler, pPixelConstantBuffer, camera);
-	//objObject2.drawObjModel(immediateContext, perFrameConstantBuffer, deferred, vertexShader, pixelShader, sampler, pPixelConstantBuffer, camera);
-	WaterMesh.drawObjModel(immediateContext, perFrameConstantBuffer, deferred, vertexShader, pixelShader, sampler, pPixelConstantBuffer, camera);
-	cubeMesh.drawObjModel(immediateContext, perFrameConstantBuffer, deferred, vertexShader, pixelShader, sampler, pPixelConstantBuffer, camera);
-
-	eyeOne.drawObjModel(immediateContext, perFrameConstantBuffer, deferred, vertexShader, pixelShader, sampler, pPixelConstantBuffer, camera);
-	platformMesh.drawObjModel(immediateContext, perFrameConstantBuffer, deferred, vertexShader, pixelShader, sampler, pPixelConstantBuffer, camera);
+	objObject.DrawObjModel(immediateContext, perFrameConstantBuffer, deferred, vertexShader, pixelShader, pPixelConstantBuffer, camera);
+	//objObject2.drawObjModel(immediateContext, perFrameConstantBuffer, deferred, vertexShader, pixelShader, pPixelConstantBuffer, camera);
+	WaterMesh.DrawObjModel(immediateContext, perFrameConstantBuffer, deferred, vertexShader, pixelShader, pPixelConstantBuffer, camera);
+	cubeMesh.DrawObjModel(immediateContext, perFrameConstantBuffer, deferred, vertexShader, pixelShader, pPixelConstantBuffer, camera);
+	eyeOne.DrawObjModel(immediateContext, perFrameConstantBuffer, deferred, vertexShader, pixelShader, pPixelConstantBuffer, camera);
+	platformMesh.DrawObjModel(immediateContext, perFrameConstantBuffer, deferred, vertexShader, pixelShader, pPixelConstantBuffer, camera);
 }
 
 void lightPass(ID3D11DeviceContext*& immediateContext, ID3D11RenderTargetView*& renderTargetView, ID3D11VertexShader*& lightPassVertexShader,
@@ -72,16 +70,13 @@ void lightPass(ID3D11DeviceContext*& immediateContext, ID3D11RenderTargetView*& 
 	immediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 	deferred.setLightPassRenderTarget(renderTargetView, immediateContext); //geting the back buffer to putt the stuff in it
+	deferred.setShaderResourceView(immediateContext, shadowObject.depthMap.shaderResourceView.Get());
 
 	immediateContext->VSSetShader(lightPassVertexShader, nullptr, 0);
 	immediateContext->GSSetShader(nullptr, nullptr, 0);
-	deferred.setShaderResourceView(immediateContext, shadowObject.depthMap.shaderResourceView.Get());
 	immediateContext->PSSetShader(lightPassPixelShader, nullptr, 0);
 
 	immediateContext->UpdateSubresource(pPixelConstantBuffer, 0, NULL, &light, 0, 0);
-	immediateContext->UpdateSubresource(pConstantBuffer, 0, NULL, &matrixes, 0, 0);
-
-
 	immediateContext->UpdateSubresource(pConstantBuffer, 0, NULL, &matrixes, 0, 0);
 
 	immediateContext->VSSetConstantBuffers(0u, 1, &pConstantBuffer);
@@ -90,6 +85,7 @@ void lightPass(ID3D11DeviceContext*& immediateContext, ID3D11RenderTargetView*& 
 	immediateContext->PSSetConstantBuffers(2u, 1, &perFrameConstantBuffer); // B2
 
 	immediateContext->Draw(6, 0);
+
 	deferred.unbindShaderResourceView(immediateContext);
 	deferred.clearRenderTargets(immediateContext);
 
@@ -132,7 +128,6 @@ int	CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 	//-----------------------------------------------------------------//
 
 	//All the tihngs needed
-	ID3D11RasterizerState*   rasState            = nullptr; // Back face culling
 	ID3D11RasterizerState*   rasStateNoCulling   = nullptr; // Back face culling with geomatry shader
 	ID3D11Device*            pDevice             = nullptr;
 	IDXGISwapChain*          pSwapChain          = nullptr;
@@ -153,7 +148,7 @@ int	CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 	ID3D11Buffer*            fullScreenVertexBuffer   = nullptr; // Fullscreen quad
 	ID3D11Buffer*			 pShadowConstantBuffer    = nullptr; // Shadow map
 	ID3D11Buffer*            pPerFrameConstantBuffer  = nullptr;
-	ID3D11SamplerState*       sampler                 = nullptr; // Using the repeat thing
+	ID3D11SamplerState*      sampler                  = nullptr; // Using the repeat thing
 
 	//Deferred things
 
@@ -219,7 +214,6 @@ int	CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 		lightPassVertexShader,
 		lightPassPixelShader,
 		lightPassVertexShaderByteCode,
-		rasState,
 		rasStateNoCulling,
 		geomatryShader,
 		pPerFrameConstantBuffer, 
@@ -259,14 +253,16 @@ int	CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 	//-----------------------------------------------------------------//
 	// Load Models
 	//-----------------------------------------------------------------//
+	std::cout << " " << std::endl;
+	std::cout << "Models are loading, this might take a while depending on your hardwere" << std::endl;
 
 	//Mesh Objects
-	Mesh heightPlaneMesh(pDevice); 
-	Mesh houseMesh(pDevice);
-	Mesh waterMesh(pDevice);
-	Mesh cubeMesh(pDevice);
-	Mesh eyeBall1(pDevice);
-	Mesh platformMesh(pDevice);
+	Mesh heightPlaneMesh; 
+	Mesh houseMesh;
+	Mesh waterMesh;
+	Mesh cubeMesh;
+	Mesh eyeBall1;
+	Mesh platformMesh;
 
 	//File Paths
 	std::wstring fileName = L"Objects/House.obj";
@@ -279,26 +275,29 @@ int	CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 	std::wstring filePath = L"Objects/";
 
 	//Set file paths
-	heightPlaneMesh.setFilePath(filePath);
-	houseMesh.setFilePath(filePath);
-	waterMesh.setFilePath(filePath);
-	cubeMesh.setFilePath(filePath);
-	eyeBall1.setFilePath(filePath);
-	platformMesh.setFilePath(filePath);
+	heightPlaneMesh.SetFilePath(filePath);
+	houseMesh.SetFilePath(filePath);
+	waterMesh.SetFilePath(filePath);
+	cubeMesh.SetFilePath(filePath);
+	eyeBall1.SetFilePath(filePath);
+	platformMesh.SetFilePath(filePath);
 
 	//Load models
-	heightPlaneMesh.loadObjModel(pDevice, fileName2, false, true);
-	//houseMesh.loadObjModel(pDevice, fileName, false, true); //False = normalerna hamnar på fel håll men specular funkar??
-	waterMesh.loadObjModel(pDevice, waterMeshPath, false, true);
-	cubeMesh.loadObjModel(pDevice, cubePath, false, true);
-	eyeBall1.loadObjModel(pDevice, eyeOneFile, false, true);
-	platformMesh.loadObjModel(pDevice, platFormFile, false, true);
+	heightPlaneMesh.LoadObjModel(pDevice, fileName2, true);
+	//houseMesh.loadObjModel(pDevice, fileName, true);
+	waterMesh.LoadObjModel(pDevice, waterMeshPath, true);
+	cubeMesh.LoadObjModel(pDevice, cubePath, true);
+	eyeBall1.LoadObjModel(pDevice, eyeOneFile, true);
+	platformMesh.LoadObjModel(pDevice, platFormFile, true);
 
 	waterMesh.Animation(true);
 	cubeMesh.Animation(true);
 	cubeMesh.FollowMe(true);
 
 	HeightMap heightMap("Objects/HeightMap.png");
+
+
+	std::cout << "Models loaded" << std::endl;
 
 	//-----------------------------------------------------------------//
 
@@ -324,6 +323,11 @@ int	CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 	// Update
 	//-----------------------------------------------------------------//
 
+	std::cout << " " << std::endl;
+	std::cout << "Move around: W A S D. SHIFT/SPACE to ascend/dscend" << std::endl;
+	std::cout << "Move camera: Hold down LEFT CLICK on the MOUSE" << std::endl;
+	std::cout << "While above/below the green terrain you'll get stuck on the ground. " << std::endl;
+	std::cout << "You may close the application by closing the render window. " << std::endl;
 
 	while (msg.message != WM_QUIT) //event queue
 	{
@@ -364,7 +368,7 @@ int	CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 			immediateContext->RSSetViewports(1, &viewPort); //Is needed at top always. 
 			immediateContext->PSSetSamplers(1,1,shadowMap.depthMap.samplerState.GetAddressOf());
 			shadowMap.depthMap.samplerState;
-
+			immediateContext->PSSetSamplers(0, 1, &sampler);
 
 			geomatryPass
 			(
@@ -373,7 +377,6 @@ int	CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 				vertexShader,
 				pixelShader,
 				inputLayout,
-				sampler,
 				pPixelConstantBuffer,
 				deffered,
 				heightPlaneMesh,
@@ -439,19 +442,8 @@ int	CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 	pDevice->QueryInterface(IID_PPV_ARGS(&pDebug));
 
 	//Get rid of some of them memoryleaks
-	deffered.shutDownDeferredObjects();
-	particles.ShutDownParticles();
 
-	heightPlaneMesh.shutDownMesh();
-	houseMesh.shutDownMesh();
-	waterMesh.shutDownMesh();
-	cubeMesh.shutDownMesh();
-	eyeBall1.shutDownMesh();
-	platformMesh.shutDownMesh();
-
-	rasState->Release();
 	rasStateNoCulling->Release();
-	pDevice->Release();
 	pSwapChain->Release();
 	immediateContext->Release();
 	renderTargetView->Release();
@@ -468,16 +460,15 @@ int	CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 	fullScreenVertexBuffer->Release();
 	pShadowConstantBuffer->Release();
 	pPerFrameConstantBuffer->Release();
-	sampler->Release();
+	//sampler->Release();
 
 	lightPassVertexShader->Release();
 	lightPassPixelShader->Release();
 
 	//----
 
-	rasState = 0;
 	rasStateNoCulling = 0;
-	pDevice = 0;
+	
 	pSwapChain = 0;
 	immediateContext = 0;
 	renderTargetView = 0;
@@ -494,27 +485,28 @@ int	CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 	fullScreenVertexBuffer = 0;
 	pShadowConstantBuffer = 0;
 	pPerFrameConstantBuffer = 0;
-	sampler = 0;
+	//sampler = 0;
 
 	lightPassVertexShader = 0;
 	lightPassPixelShader = 0;
 
 	delete walkingCamera;
 
-
+	pDevice->Release();
+	pDevice = 0;
 
 	pDebug->ReportLiveDeviceObjects(D3D11_RLDO_DETAIL);
+
 	pDebug->Release();
+	pDebug = 0;
 
 
-	//if (gResult == -1)
-	//{
-	//	return -1;
-	//}
-	//else
-	//{
-	//	return msg.wParam;
-	//}
-
-	return 0;
+	if (gResult == -1)
+	{
+		return -1;
+	}
+	else
+	{
+		return msg.wParam;
+	}
 }

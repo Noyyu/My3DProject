@@ -9,7 +9,7 @@ Graphics::Graphics(UINT width, UINT height, HWND windowHandle, ID3D11Device*& pD
 	ID3D11PixelShader*& pixelShader, std::string& vertexShaderByteCode, ID3D11InputLayout*& inputLayout,ID3D11Buffer*& pConstantBuffer,
 	ID3D11SamplerState*& sampler, Light& light, ID3D11Buffer*& pPixelConstantBuffer, constantBufferMatrixes matrixes, ID3D11Buffer*& FullScreenVertexBuffer,
 	ID3D11VertexShader*& finalPassVertexShader, ID3D11PixelShader*& finalPassPixelShader,std::string& lightPassVertexShaderByteCode, 
-	ID3D11RasterizerState*& rasState, ID3D11RasterizerState*& rasStateNoCulling, ID3D11GeometryShader*& geomatryShader, 
+	ID3D11RasterizerState*& rasStateNoCulling, ID3D11GeometryShader*& geomatryShader, 
 	ID3D11Buffer*& pPerFrameConstantBuffer, PerFrameMatrixes perFrameStruct)
 {
 	//... SETING UP D3D11 THINGS ...//
@@ -29,7 +29,7 @@ Graphics::Graphics(UINT width, UINT height, HWND windowHandle, ID3D11Device*& pD
 	//////////////////////////////
 
 	//... Create Rasterizer States //
-	createRasterizerStates(pDevice, rasState, rasStateNoCulling, immediateContext);
+	createRasterizerStates(pDevice, rasStateNoCulling, immediateContext);
 
 	//... Create constant buffer for vertex shader //
 	createConstantBuffer(pDevice, pConstantBuffer, matrixes);
@@ -55,6 +55,10 @@ Graphics::Graphics(UINT width, UINT height, HWND windowHandle, ID3D11Device*& pD
 	//.. Create Per Frame Constant Buffer //
 	createPerFrameBuffer(pDevice, pPerFrameConstantBuffer, perFrameStruct);
 	
+}
+
+Graphics::~Graphics()
+{
 }
 
 bool Graphics::createInterface(UINT width, UINT height, HWND windowHandle, IDXGISwapChain*& pSwapChain, ID3D11Device*& pDevice, ID3D11DeviceContext*& immediateContext)
@@ -93,7 +97,9 @@ bool Graphics::createInterface(UINT width, UINT height, HWND windowHandle, IDXGI
 		nullptr,
 		&immediateContext
 	);
+	pDevice->Release();
 	return !(FAILED(hr));
+	
 }
 
 bool Graphics::createRenderTargetView(IDXGISwapChain*& pSwapChain, ID3D11Device*& pDevice, ID3D11RenderTargetView*& renderTargetView) //Has something to do with the backbuffer
@@ -106,8 +112,9 @@ bool Graphics::createRenderTargetView(IDXGISwapChain*& pSwapChain, ID3D11Device*
 	//Creates renderTarget
 	HRESULT hr = pDevice->CreateRenderTargetView(pBackBuffer, nullptr, &renderTargetView);
 	pBackBuffer->Release();
+	pDevice->Release();
+	pSwapChain->Release();
 	return !(FAILED(hr));
-
 }
 
 bool Graphics::fullScreenQuadVertexBuffer(ID3D11Device*& pDevice, ID3D11Buffer*& vertexBuffer)
@@ -140,6 +147,7 @@ bool Graphics::fullScreenQuadVertexBuffer(ID3D11Device*& pDevice, ID3D11Buffer*&
 	D3D11_SUBRESOURCE_DATA subresourceData = { 0 };
 	subresourceData.pSysMem = quad;
 	HRESULT hr = pDevice->CreateBuffer(&bufferDesc, &subresourceData, &vertexBuffer);
+	pDevice->Release();
 	return !FAILED(hr);
 }
 
@@ -175,6 +183,7 @@ bool Graphics::loadShader(ID3D11Device*& device, ID3D11VertexShader*& VertexShad
 		std::cout << "ERROR::loadGeomatryPassShaders:: Could not create GEOMATRY_PASS_GEOMATRY_SHADER" << std::endl;
 		return false;
 	}
+	device->Release();
 }
 
 bool Graphics::loadLightPassShaders(ID3D11Device*& device, std::string& lightPassVertexShaderByteCode, ID3D11VertexShader*& finalPassVertexShader, ID3D11PixelShader*& finalPassPixelShader)
@@ -201,7 +210,7 @@ bool Graphics::loadLightPassShaders(ID3D11Device*& device, std::string& lightPas
 		std::cout << "ERROR::loadLightPassShaders:: Could not create LIGHT_PASS_PIXEL_SHADER" << std::endl;
 		return false;
 	}
-
+	device->Release();
 	return true;
 }
 
@@ -238,6 +247,7 @@ bool Graphics::createConstantBuffer(ID3D11Device*& pDevice, ID3D11Buffer*& pCons
 	{
 		std::cout << "Failed to create constant buffer" << std::endl;
 	}
+	pDevice->Release();
 	return !FAILED(hr);
 }
 
@@ -257,6 +267,7 @@ bool Graphics::createPixelConstantBuffer(ID3D11Device*& pDevice, Light& light, I
 	constantSubresourceData.SysMemSlicePitch = 0;
 
 	HRESULT hr = pDevice->CreateBuffer(&constantBufferDesc, &constantSubresourceData, std::addressof(pPixelConstantBuffer));
+	pDevice->Release();
 	return !FAILED(hr);
 }
 
@@ -275,6 +286,7 @@ bool Graphics::createSamplerState(ID3D11Device*& device, ID3D11SamplerState*& sa
 	desc.MaxLOD = D3D11_FLOAT32_MAX; // no upper limit on LOD
 
 	HRESULT hr = device->CreateSamplerState(&desc, &sampler);
+	device->Release();
 	return !FAILED(hr);
 }
 
@@ -297,6 +309,7 @@ bool Graphics::createInputLayout(ID3D11Device*& device, ID3D11InputLayout*& inpu
 	};
 	//HRESULT is a data type that basically handles common error codes
 	HRESULT hr = device->CreateInputLayout(inputDesc, ARRAYSIZE(inputDesc), vertexShaderByteCode.c_str(), vertexShaderByteCode.length(), &inputLayout);
+	device->Release();
 	return !FAILED(hr);
 }
 
@@ -320,8 +333,9 @@ bool Graphics::loadShaderData(const std::string& filename, std::string& shaderBy
 	return true;
 }
 
-bool Graphics::createRasterizerStates(ID3D11Device*& device, ID3D11RasterizerState*& rasState, ID3D11RasterizerState*& rasStateNoCulling, ID3D11DeviceContext*& immediateContext)
+bool Graphics::createRasterizerStates(ID3D11Device*& device, ID3D11RasterizerState*& rasStateNoCulling, ID3D11DeviceContext*& immediateContext)
 {
+	
 	D3D11_RASTERIZER_DESC rasStateDesc;
 	ZeroMemory(&rasStateDesc, sizeof(D3D11_RASTERIZER_DESC));
 
@@ -334,19 +348,9 @@ bool Graphics::createRasterizerStates(ID3D11Device*& device, ID3D11RasterizerSta
 	rasStateDesc.DepthBiasClamp = 0.0f;
 	rasStateDesc.SlopeScaledDepthBias = 0.0f;
 	rasStateDesc.FillMode = D3D11_FILL_MODE::D3D11_FILL_SOLID;
-	
-
-	rasStateDesc.CullMode = D3D11_CULL_MODE::D3D11_CULL_BACK;
-	HRESULT hr = device->CreateRasterizerState(&rasStateDesc, &rasState); //Culling state;
-
-	if (FAILED(hr))
-	{
-		std::cout << "Could not create Rasterizer State (Culling)" << std::endl;
-		return false;
-	}
 
 	rasStateDesc.CullMode = D3D11_CULL_MODE::D3D11_CULL_NONE;
-	hr = device->CreateRasterizerState(&rasStateDesc, &rasStateNoCulling); //No culling state;
+	HRESULT hr = device->CreateRasterizerState(&rasStateDesc, &rasStateNoCulling); //No culling state;
 
 	if (FAILED(hr))
 	{
@@ -356,7 +360,7 @@ bool Graphics::createRasterizerStates(ID3D11Device*& device, ID3D11RasterizerSta
 
 	//Set default state
 	immediateContext->RSSetState(rasStateNoCulling);
-	//immediateContext->RSSetState(rasState);
+	device->Release();
 	return true;
 }
 
@@ -380,6 +384,7 @@ bool Graphics::createPerFrameBuffer(ID3D11Device*& pDevice, ID3D11Buffer*& pPerF
 	{
 		std::cout << "Could not create PerFrameConstantBuffer" << std::endl;
 	}
+	//pDevice->Release();
 	return !FAILED(hr);
 }
 

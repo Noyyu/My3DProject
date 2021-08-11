@@ -11,16 +11,14 @@ LRESULT CALLBACK WindowProc(HWND windowHandle, UINT msg, WPARAM wParam, LPARAM l
 	//When the WM_CLOSE is sent, //Function that makes the application close as you close the window
 	case WM_DESTROY:
 		//post a quit message
-		PostQuitMessage(0);
+		PostQuitMessage(40);
 		DestroyWindow(windowHandle);
-		return 0;
 		break;
 
 	case WM_CLOSE:
 		//post a quit message
-		PostQuitMessage(0);
+		PostQuitMessage(40);
 		DestroyWindow(windowHandle);
-		return 0;
 		break;
 	
 	
@@ -141,7 +139,7 @@ bool setUpCMD()
 	HANDLE stdHandle = GetStdHandle(STD_OUTPUT_HANDLE);
 	int hConsole = _open_osfhandle((intptr_t)stdHandle, _O_TEXT);
 	FILE* fp = _fdopen(hConsole, "w");
-	freopen_s(&fp, "CONOUT$", "w", stdout); //Så cout syns i konsol fönstret
+	freopen_s(&fp, "CONOUT$", "w", stdout); // Så cout syns i konsol fönstret
 	freopen_s(&fp, "CONOUT$", "w", stderr); // Så cerr syns i konsol fönstret
 	return true;
 }

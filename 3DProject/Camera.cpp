@@ -12,6 +12,10 @@ Camera::Camera(DirectX::XMVECTOR cameraPos, DirectX::XMVECTOR cameraTarget, Dire
 
 }
 
+Camera::~Camera()
+{
+}
+
 DirectX::XMMATRIX Camera::getCameraProjection()
 {
 	return this->cameraProjection;

@@ -134,7 +134,7 @@ bool ShadowMap::CreateShadowMap()
 void ShadowMap::shadowPass(Light* light, ID3D11Buffer*& pShadowConstantBuffer, ID3D11VertexShader* vertexShader, ID3D11InputLayout*& inputLayoutSM)
 {
 	ID3D11RenderTargetView* nullRTV[] = { nullptr };
-	this->deviceContext->PSGetSamplers(1, 1, this->depthMap.samplerState.GetAddressOf());
+	this->deviceContext->PSSetSamplers(1, 1, this->depthMap.samplerState.GetAddressOf());
 	this->deviceContext->OMSetRenderTargets(1, nullRTV, this->depthMap.depthScentilView.Get());
 	this->deviceContext->ClearDepthStencilView(this->depthMap.depthScentilView.Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 

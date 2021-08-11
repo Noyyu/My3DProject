@@ -4,7 +4,7 @@
 
 
 
-Mesh::Mesh(ID3D11Device*& pDevice)
+Mesh::Mesh()
 
 {
     this->filePath = L"";
@@ -25,11 +25,6 @@ Mesh::Mesh(ID3D11Device*& pDevice)
     this->meshSubsetTexture = {};
     this->meshSubsetMaterialArray = {};
 
-    //this->mtlNormalTexture = {};
-    //this->mtlShaderResourceView = {};
-    //this->mtlNormalShaderResourceView = {};
-    //this->mtlRenderTargetView = {};
-
     this->meshVertexBuffer = {};
     this->meshIndexBuffer = {};
 
@@ -39,12 +34,12 @@ Mesh::Mesh(ID3D11Device*& pDevice)
 }
 
 
-void Mesh::setFilePath(std::wstring filePath)
+void Mesh::SetFilePath(std::wstring filePath)
 {
     this->filePath = filePath;
 }
 
-bool Mesh::loadObjModel(ID3D11Device*& device, std::wstring fileName, bool isRightHandCoordSystem, bool computeNormals)
+bool Mesh::LoadObjModel(ID3D11Device*& device, std::wstring fileName, bool computeNormals)
 {
     using namespace DirectX; //Needed for vector operations
     HRESULT hr = {};
@@ -87,7 +82,6 @@ bool Mesh::loadObjModel(ID3D11Device*& device, std::wstring fileName, bool isRig
     //checks if the file can be opened. If i add full screen mode some time, make sure we are out if it when this happenes
     if (fileIn)
     {
-        std::cout << "OBJ file is open" << std::endl;
     }
     else
     {
@@ -137,18 +131,8 @@ bool Mesh::loadObjModel(ID3D11Device*& device, std::wstring fileName, bool isRig
                 float vx = {}, vy = {}, vz = {};
                 fileIn >> vx >> vy >> vz; //Stores the vertices in the float variables
 
-                //std::cout << vx << vy << vz << std::endl;
-
                 //3: Checks if the model uses a right hand coordinatiopn system, if so we invert the z value. 
-                if (isRightHandCoordSystem == true) 
-                {
-                    //vertexPosition.push_back(DirectX::XMFLOAT3(vx, vy, vz * -1.0f));
-                    vertexPosition.push_back(DirectX::XMFLOAT3(vx, vy, vz));
-                }
-                else
-                {
-                    vertexPosition.push_back(DirectX::XMFLOAT3(vx, vy, vz));
-                }
+                vertexPosition.push_back(DirectX::XMFLOAT3(vx, vy, vz));
             }
             ///----- Vertex texture coordinate -----///
 
@@ -157,15 +141,7 @@ bool Mesh::loadObjModel(ID3D11Device*& device, std::wstring fileName, bool isRig
                 float vtcu = {}, vtcv = {};
                 fileIn >> vtcu >> vtcv; //Stores the texture coordinates (2d) in the float variables.
 
-                if (isRightHandCoordSystem) // 3 checks if its right handed again, if so, remove 1 from the v coordinate. 
-                {
-                    //vertexTextureCoordinates.push_back(DirectX::XMFLOAT2(vtcu, vtcv));
-                    vertexTextureCoordinates.push_back(DirectX::XMFLOAT2(vtcu, 1.0f - vtcv));
-                }
-                else
-                {
-                    vertexTextureCoordinates.push_back(DirectX::XMFLOAT2(vtcu, 1.0f - vtcv));
-                }
+                vertexTextureCoordinates.push_back(DirectX::XMFLOAT2(vtcu, 1.0f - vtcv));
 
                 hasTextureCoordinates = true;
             }
@@ -176,15 +152,7 @@ bool Mesh::loadObjModel(ID3D11Device*& device, std::wstring fileName, bool isRig
                 float vnx = {}, vny = {}, vnz = {};
                 fileIn >> vnx >> vny >> vnz; //stores the vertex normals in the float variables. 
                 
-                if (isRightHandCoordSystem) // inverts z if this is a right hand coordinate system
-                {
-                    //vertexNormal.push_back(DirectX::XMFLOAT3(vnx, vny, vnz * -1.0f));
-                    vertexNormal.push_back(DirectX::XMFLOAT3(vnx, vny, vnz));
-                }
-                else
-                {
-                    vertexNormal.push_back(DirectX::XMFLOAT3(vnx , vny, vnz));
-                }
+                vertexNormal.push_back(DirectX::XMFLOAT3(vnx, vny, vnz));
 
                 hasNormals == true;
             }
@@ -585,7 +553,6 @@ bool Mesh::loadObjModel(ID3D11Device*& device, std::wstring fileName, bool isRig
     //6: open mtl file
     if (fileIn)
     {
-        std::cout << "MTL opened" << std::endl;
     }
     else
     {
@@ -718,8 +685,6 @@ bool Mesh::loadObjModel(ID3D11Device*& device, std::wstring fileName, bool isRig
                                 //if the texture is not already loaded, load it now
                                 if (!alreadyLoaded)
                                 {
-                                    //ID3D11ShaderResourceView* tempMeshShaderResourceView;
-
                                     //Use the stb lib to load the picture data and then make a D3D11Texture2D and its views (shaderResourceView, shaderTargetView)
                                     //hur fan då
                                     //I'll have to like.. convert wstring to cont char, but wstring is unicode and char is ASCII.
@@ -844,8 +809,6 @@ bool Mesh::loadObjModel(ID3D11Device*& device, std::wstring fileName, bool isRig
                         //if the texture is not already loaded, load it now
                         if (!alreadyLoaded)
                         {
-                            //ID3D11ShaderResourceView* tempMeshShaderResourceView; //Hittar inte vart denna används just nu.
-
                             //Use the stb lib to load the picture data and then make a D3D11Texture2D and its views (shaderResourceView, shaderTargetView)
                             //hur fan då
                             //I'll have to like.. convert wstring to cont char, but wstring is unicode and char is ASCII.
@@ -1099,16 +1062,11 @@ bool Mesh::loadObjModel(ID3D11Device*& device, std::wstring fileName, bool isRig
             }
 
             //Get the actual normal by dividing the normalSum by the number of faces sharing the vertex
-            if (isRightHandCoordSystem)
-            {
-                normalSum = normalSum / facesUsing; 
-                tangentSum = tangentSum / facesUsing;
-            }
-            else
-            {
-                normalSum = normalSum / facesUsing; //invert cuz of coordinet system stuff
-                tangentSum = tangentSum / facesUsing;
-            }
+
+
+            normalSum = normalSum / facesUsing; 
+            tangentSum = tangentSum / facesUsing;
+
 
             //Normalize the normalSum vector and tangent
             normalSum = DirectX::XMVector3Normalize(normalSum);
@@ -1179,8 +1137,8 @@ bool Mesh::loadObjModel(ID3D11Device*& device, std::wstring fileName, bool isRig
 }
 
 
-void Mesh::drawObjModel(ID3D11DeviceContext*& immediateContext, ID3D11Buffer*& pConstantBuffer, Deferred& deferred,
-    ID3D11VertexShader*& vertexShader, ID3D11PixelShader*& pixelShader, ID3D11SamplerState*& sampler, ID3D11Buffer*& pPixelConstantBuffer, Camera*& camera)
+void Mesh::DrawObjModel(ID3D11DeviceContext*& immediateContext, ID3D11Buffer*& pConstantBuffer, Deferred& deferred,
+    ID3D11VertexShader*& vertexShader, ID3D11PixelShader*& pixelShader, ID3D11Buffer*& pPixelConstantBuffer, Camera* camera)
 {
     for (int i = 0; i < meshSubsets; i++)
     {
@@ -1215,7 +1173,6 @@ void Mesh::drawObjModel(ID3D11DeviceContext*& immediateContext, ID3D11Buffer*& p
         sm::Matrix worldInverted = worldMatrix.Invert();
         DirectX::XMStoreFloat4x4(&objMats.WorldInverseTransposeMatrix, worldInverted.Transpose());
 
-
         this->objMats.World = matrixFunction.setWorld(world);
         this->objMats.WorldViewProjection =  matrixFunction.setWVP(world * camera->getCameraView() * camera->getCameraProjection());
 
@@ -1224,26 +1181,20 @@ void Mesh::drawObjModel(ID3D11DeviceContext*& immediateContext, ID3D11Buffer*& p
         this->objMats.animated = this->animation;
 
         immediateContext->VSSetConstantBuffers(0, 1, &pConstantBuffer);
-        
-        immediateContext->VSSetShader(vertexShader, nullptr, 0);
-        immediateContext->PSSetShader(pixelShader, nullptr, 0);
-
-
-        immediateContext->PSSetSamplers(0, 1, &sampler);
         immediateContext->PSSetConstantBuffers(0, 1, &pConstantBuffer);
-        
+
+        immediateContext->VSSetShader(vertexShader, nullptr, 0);
+        immediateContext->PSSetShader(pixelShader, nullptr, 0);      
 
         //Skickar vidare textureen till den första slotten om den finns. 
         if (material[i].hasTexture == true)
         {
-
             immediateContext->PSSetShaderResources(0, 1, &meshShaderResourceView[0]);
         }
         
         //Skicka in nomral map på den andra slotten om den finns. 
         if (material[i].hasNormalMap == true)
         {
-
             immediateContext->PSSetShaderResources(1, 1, &meshShaderResourceView[1]);
         }
 
@@ -1256,7 +1207,7 @@ void Mesh::drawObjModel(ID3D11DeviceContext*& immediateContext, ID3D11Buffer*& p
     }
 }
 
-void Mesh::DrawShadow(ID3D11DeviceContext*& immediateContext, Camera*& camera, ID3D11Buffer*& pConstantBuffer)
+void Mesh::DrawShadow(ID3D11DeviceContext*& immediateContext, Camera* camera, ID3D11Buffer*& pConstantBuffer)
 {
     for (int i = 0; i < meshSubsets; i++)
     {
@@ -1294,6 +1245,7 @@ void Mesh::DrawShadow(ID3D11DeviceContext*& immediateContext, Camera*& camera, I
         immediateContext->VSSetConstantBuffers(1, 1, &pConstantBuffer);
 
         immediateContext->DrawIndexedInstanced(indices.size(), 1, 0, 0, 0);
+        
     }
 }
 
@@ -1308,14 +1260,3 @@ void Mesh::FollowMe(bool follow)
     this->followMe = follow;
 }
 
-
-void Mesh::shutDownMesh()
-{
-    //meshVertexBuffer->Release();
-    //meshIndexBuffer->Release();
-    //for (auto& it : meshShaderResourceView)
-    //    if (it != nullptr)
-    //        it->Release();
-    //Need to release the vector filled with COM objects.
-    //std::vector<ID3D11ShaderResourceView*> meshShaderResourceView;
-}

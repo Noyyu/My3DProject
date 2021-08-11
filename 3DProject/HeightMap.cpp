@@ -6,6 +6,10 @@ HeightMap::HeightMap(const char* TextureName)
 	readImageData();
 }
 
+HeightMap::~HeightMap()
+{
+}
+
 void HeightMap::readImageData()
 {
 	int channels;

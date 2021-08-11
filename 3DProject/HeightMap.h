@@ -5,6 +5,7 @@ class HeightMap
 {
 public:
 	HeightMap(const char* TextureName);
+	~HeightMap();
 
 	void  readImageData();
 	float getHegihtOnPosition(float x, float z);

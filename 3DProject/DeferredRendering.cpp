@@ -23,6 +23,35 @@ Deferred::Deferred()
 
 Deferred::~Deferred()
 {
+	normalData->Release();
+	positionData->Release();
+	diffuseData->Release();
+
+	normalTargetView->Release();
+	positionTargetView->Release();
+	diffuseTargetView->Release();
+
+	normalResourceView->Release();
+	positionResourceView->Release();
+	diffuseResourceView->Release();
+
+	depthData->Release();
+	depthStencilView->Release();
+
+	normalData = 0;
+	positionData = 0;
+	diffuseData = 0;
+
+	normalTargetView = 0;
+	positionTargetView = 0;
+	diffuseTargetView = 0;
+
+	normalResourceView = 0;
+	positionResourceView = 0;
+	diffuseResourceView = 0;
+
+	depthData = 0;
+	depthStencilView = 0;
 }
 
 bool Deferred::instalize(ID3D11Device*& device, int textureWidth, int textureHeight, float screenDepth, float screenNear)
@@ -122,40 +151,8 @@ bool Deferred::instalize(ID3D11Device*& device, int textureWidth, int textureHei
 	viewport.TopLeftX = 0.0f;
 	viewport.TopLeftY = 0.0f;
 
+	//device->Release();
 	return true;
-}
-
-void Deferred::shutDownDeferredObjects()
-{
-	normalData->Release();
-	positionData->Release();
-	diffuseData->Release();
-
-	normalTargetView->Release();
-	positionTargetView->Release();
-	diffuseTargetView->Release();
-
-	normalResourceView->Release();
-	positionResourceView->Release();
-	diffuseResourceView->Release();
-
-	depthData->Release();
-	depthStencilView->Release();
-
-	normalData = 0;
-	positionData = 0;
-	diffuseData = 0;
-
-	normalTargetView = 0;
-	positionTargetView = 0;
-	diffuseTargetView = 0;
-
-	normalResourceView = 0;
-	positionResourceView = 0;
-	diffuseResourceView = 0;
-
-	depthData = 0;
-	depthStencilView = 0;
 }
 
 void Deferred::setRenderTargets(ID3D11DeviceContext*& deviceContext)
@@ -167,7 +164,7 @@ void Deferred::setRenderTargets(ID3D11DeviceContext*& deviceContext)
 
 	// Set the viewport.
 	deviceContext->RSSetViewports(1, &viewport);
-	return;
+
 }
 
 void Deferred::clearRenderTargets(ID3D11DeviceContext*& deviceContext)
@@ -181,6 +178,7 @@ void Deferred::clearRenderTargets(ID3D11DeviceContext*& deviceContext)
 	deviceContext->ClearRenderTargetView(positionTargetView, clearColor);
 	deviceContext->ClearRenderTargetView(diffuseTargetView, clearColor);
 	deviceContext->ClearDepthStencilView(depthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0);
+	
 }
 
 ID3D11ShaderResourceView* Deferred::getShaderResourceView(int index)
@@ -205,16 +203,18 @@ void Deferred::setShaderResourceView(ID3D11DeviceContext*& deviceContext, ID3D11
 
 	// Bind the render target view array and depth stencil buffer to the output render pipeline.
 	deviceContext->PSSetShaderResources(0, 4, targets);
+	
 }
 
 void Deferred::unbindShaderResourceView(ID3D11DeviceContext*& deviceContext)
 {
 	ID3D11ShaderResourceView* const kill[4] = { nullptr };
 	deviceContext->PSSetShaderResources(0, 4, kill);
-
+	
 }
 
-void Deferred::setLightPassRenderTarget(ID3D11RenderTargetView* renderTargetView, ID3D11DeviceContext*& deviceContext)
+void Deferred::setLightPassRenderTarget(ID3D11RenderTargetView*& renderTargetView, ID3D11DeviceContext*& deviceContext)
 {
 	deviceContext->OMSetRenderTargets(1, &renderTargetView, depthStencilView);
+	
 }
