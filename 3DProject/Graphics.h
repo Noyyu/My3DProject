@@ -6,25 +6,60 @@ class Graphics
 {
 public:
 
-	Graphics(UINT width, UINT height, HWND windowHandle, ID3D11Device*& pDevice, ID3D11DeviceContext*& immediateContext,
-		IDXGISwapChain*& pSwapChain, ID3D11RenderTargetView*& renderTargetView, D3D11_VIEWPORT& viewport, ID3D11VertexShader*& VertexShader,
-		ID3D11PixelShader*& pixelShader, std::string& vertexShaderByteCode, ID3D11InputLayout*& inputLayout, ID3D11Buffer*& pConstantBuffer,
-		ID3D11SamplerState*& sampler, Light& light, ID3D11Buffer*& pPixelConstantBuffer, constantBufferMatrixes matrixes, ID3D11Buffer*& FullScreenVertexBuffer,
-		ID3D11VertexShader*& finalPassVertexShader, ID3D11PixelShader*& finalPassPixelShader, std::string& lightPassVertexShaderByteCode, 
-		ID3D11RasterizerState* rasStateNoCulling, ID3D11GeometryShader*& geomatryShader, ID3D11Buffer*& pPerFrameConstantBuffer, PerFrameMatrixes perFrameStruct);
+	//All the tihngs needed
+	
+	ComPtr <ID3D11RasterizerState> rasStateNoCulling; // Back face culling with geomatry shader
+	ComPtr < ID3D11Device> pDevice;
+	ComPtr < IDXGISwapChain> pSwapChain;
+	ComPtr < ID3D11DeviceContext> immediateContext;
+	ComPtr < ID3D11RenderTargetView> renderTargetView;
+
+	//Shaders
+	ComPtr < ID3D11VertexShader> vertexShader; // Geomatry pass
+	ComPtr < ID3D11PixelShader> pixelShader; // Geomatry pass
+	ComPtr < ID3D11VertexShader> lightPassVertexShader; // Light pass
+	ComPtr < ID3D11PixelShader> lightPassPixelShader; // Light pass
+	ComPtr < ID3D11GeometryShader> geomatryShader; // Back face culling
+	ComPtr < ID3D11VertexShader> ShadowVertexShader; // Shadow shader
+
+	ComPtr < ID3D11InputLayout> inputLayout;
+	ComPtr < ID3D11InputLayout> shadowInputLayout;
+
+	//Byte codes
+	std::string              lightPassVertexShaderByteCode;
+	std::string              vertexShaderByteCode;
+	std::string              vertexShadowShaderByteCode;       // Shadow map
+
+	//Buffers
+	ComPtr < ID3D11Buffer> pConstantBuffer; // Per Object
+	ComPtr < ID3D11Buffer> pPixelConstantBuffer; // Light buffer
+	ComPtr < ID3D11Buffer> fullScreenVertexBuffer; // Fullscreen quad
+	ComPtr < ID3D11Buffer> pShadowConstantBuffer; // Shadow map
+	ComPtr < ID3D11Buffer> pPerFrameConstantBuffer; // Per Frame
+
+	ComPtr < ID3D11SamplerState> sampler; // Using the repeat thing (Shadow has its own sampler for.. not repeat things)
+
+
+
+	Graphics(UINT width, UINT height, HWND windowHandle, D3D11_VIEWPORT& viewport, Light& light, constantBufferMatrixes matrixes, PerFrameMatrixes perFrameStruct);
 	~Graphics();
 
-	bool createInterface(UINT width, UINT height, HWND windowHandle, IDXGISwapChain*& pSwapChain, ID3D11Device*& pDevice, ID3D11DeviceContext*& immediateContext);
-	bool createRenderTargetView(IDXGISwapChain*& pSwapChain, ID3D11Device*& pDevice, ID3D11RenderTargetView*& renderTargetView);
-	bool loadShader(ID3D11Device*& device, ID3D11VertexShader*& VertexShader, ID3D11PixelShader*& pixelShader, std::string& vertexShaderByteCode, ID3D11GeometryShader*& geomatryShader);
-	bool createInputLayout(ID3D11Device*& device, ID3D11InputLayout*& inputLayout, const std::string& vertexShaderByteCode);
+private:
+
+	bool createInterface(UINT width, UINT height, HWND windowHandle);
+	bool createRenderTargetView();
+	bool loadShader();
+	bool createInputLayout();
 	void setViewport(D3D11_VIEWPORT& viewport, UINT width, UINT height);
-	bool createConstantBuffer(ID3D11Device*& pDevice, ID3D11Buffer*& pConstantBuffer, constantBufferMatrixes matrixes);
-	bool createSamplerState(ID3D11Device*& device, ID3D11SamplerState*& sampler);
-	bool createPixelConstantBuffer(ID3D11Device*& pDevice, Light& light, ID3D11Buffer*& pPixelConstantBuffer);
-	bool fullScreenQuadVertexBuffer(ID3D11Device*& pDevice, ID3D11Buffer*& vertexBuffer);
-	bool loadLightPassShaders(ID3D11Device*& device, std::string& lightPassVertexShaderByteCode, ID3D11VertexShader*& finalPassVertexShader, ID3D11PixelShader*& finalPassPixelShader);
+	
+	bool createSamplerState();
+	
+	bool fullScreenQuadVertexBuffer();
+	bool loadLightPassShaders();
 	bool loadShaderData(const std::string& filename, std::string& shaderByteCode);
-	bool createRasterizerStates(ID3D11Device*& device, ID3D11RasterizerState* rasStateNoCulling, ID3D11DeviceContext*& immediateContext);
-	bool createPerFrameBuffer(ID3D11Device*& pDevice, ID3D11Buffer*& pPerFrameConstantBuffer, PerFrameMatrixes perFrameStruct);
+	bool createRasterizerStates();
+
+	bool createPerFrameBuffer(PerFrameMatrixes perFrameStruct);
+	bool createConstantBuffer(constantBufferMatrixes matrixes);
+	bool createPixelConstantBuffer(Light& light);
 };

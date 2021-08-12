@@ -25,9 +25,6 @@ Mesh::Mesh()
     this->meshSubsetTexture = {};
     this->meshSubsetMaterialArray = {};
 
-    this->meshVertexBuffer = {};
-    this->meshIndexBuffer = {};
-
     std::vector<SurfaceMaterial> material = {};
     std::vector<ID3D11ShaderResourceView*> meshShaderResourceView = {};
     std::vector<std::wstring> textureNameArray = {}; //https://www.cplusplus.com/reference/string/wstring/
@@ -39,7 +36,7 @@ void Mesh::SetFilePath(std::wstring filePath)
     this->filePath = filePath;
 }
 
-bool Mesh::LoadObjModel(ID3D11Device*& device, std::wstring fileName, bool computeNormals)
+bool Mesh::LoadObjModel(ID3D11Device* device, std::wstring fileName, bool computeNormals)
 {
     using namespace DirectX; //Needed for vector operations
     HRESULT hr = {};
@@ -1137,8 +1134,8 @@ bool Mesh::LoadObjModel(ID3D11Device*& device, std::wstring fileName, bool compu
 }
 
 
-void Mesh::DrawObjModel(ID3D11DeviceContext*& immediateContext, ID3D11Buffer*& pConstantBuffer, Deferred& deferred,
-    ID3D11VertexShader*& vertexShader, ID3D11PixelShader*& pixelShader, ID3D11Buffer*& pPixelConstantBuffer, Camera* camera)
+void Mesh::DrawObjModel(ID3D11DeviceContext* immediateContext, ID3D11Buffer* pConstantBuffer,
+    ID3D11VertexShader* vertexShader, ID3D11PixelShader* pixelShader, ID3D11Buffer* pPixelConstantBuffer, Camera* camera)
 {
     for (int i = 0; i < meshSubsets; i++)
     {
@@ -1207,7 +1204,7 @@ void Mesh::DrawObjModel(ID3D11DeviceContext*& immediateContext, ID3D11Buffer*& p
     }
 }
 
-void Mesh::DrawShadow(ID3D11DeviceContext*& immediateContext, Camera* camera, ID3D11Buffer*& pConstantBuffer)
+void Mesh::DrawShadow(ID3D11DeviceContext* immediateContext, Camera* camera, ID3D11Buffer* pConstantBuffer)
 {
     for (int i = 0; i < meshSubsets; i++)
     {
@@ -1252,8 +1249,6 @@ void Mesh::DrawShadow(ID3D11DeviceContext*& immediateContext, Camera* camera, ID
 
 void Mesh::ShutDown()
 {
-    //this->meshIndexBuffer->Release();
-    //this->meshVertexBuffer->Release();
     meshShaderResourceView.clear();
     meshShaderResourceView.~vector();
 }

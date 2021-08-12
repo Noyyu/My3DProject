@@ -29,11 +29,11 @@ private:
 	ComPtr<ID3D11ShaderResourceView> mtlNormalShaderResourceView;
 	ComPtr<ID3D11RenderTargetView> mtlRenderTargetView;
 
-	ID3D11Buffer* meshVertexBuffer; //Needs to be released
-	ID3D11Buffer* meshIndexBuffer;  //Needs to be released
+	ID3D11Buffer* meshVertexBuffer; //Becomes null somehow
+	ID3D11Buffer* meshIndexBuffer;  //Becomes null somehow
 
 	std::vector<SurfaceMaterial> material;
-	std::vector<ID3D11ShaderResourceView*> meshShaderResourceView; //Needs to be released
+	std::vector<ComPtr<ID3D11ShaderResourceView>> meshShaderResourceView; //Needs to be released
 	std::vector<std::wstring> textureNameArray; //https://www.cplusplus.com/reference/string/wstring/
 
 public:
@@ -42,10 +42,10 @@ public:
 	virtual ~Mesh() = default;
 
 	void SetFilePath(std::wstring filePath);
-	bool LoadObjModel(ID3D11Device*& device, std::wstring fileName, bool computeNormals);
+	bool LoadObjModel(ID3D11Device* device, std::wstring fileName, bool computeNormals);
 
-	void DrawObjModel(ID3D11DeviceContext*& immediateContext, ID3D11Buffer*& pConstantBuffer, Deferred &deferred, ID3D11VertexShader*& vertexShader, ID3D11PixelShader*& pixelShader, ID3D11Buffer*& pPixelConstantBuffer, Camera* camera);
-	void DrawShadow(ID3D11DeviceContext*& immediateContext, Camera* camera, ID3D11Buffer*& pConstantBuffer);
+	void DrawObjModel(ID3D11DeviceContext* immediateContext, ID3D11Buffer* pConstantBuffer, ID3D11VertexShader* vertexShader, ID3D11PixelShader* pixelShader, ID3D11Buffer* pPixelConstantBuffer, Camera* camera);
+	void DrawShadow(ID3D11DeviceContext* immediateContext, Camera* camera, ID3D11Buffer* pConstantBuffer);
 
 	//Create a draw shadow function here maybe. 
 	void Animation(bool animation);

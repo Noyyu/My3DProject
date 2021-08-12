@@ -22,8 +22,8 @@ class ParticleSystem
 public:
 	ParticleSystem();
 	~ParticleSystem();
-	void InitializeParticles(ID3D11Device*& device, Particle particleList[], DirectX::XMFLOAT4 position);
-	void particlePass(ID3D11DeviceContext*& deviceContext, Camera*& walkingCamera);
+	void InitializeParticles(ID3D11Device* device, Particle particleList[], DirectX::XMFLOAT4 position);
+	void particlePass(ID3D11DeviceContext* deviceContext, Camera* walkingCamera);
 
 private:
 
@@ -35,13 +35,13 @@ private:
 	ComPtr<ID3D11GeometryShader> particleGeomatryShader;
 	ComPtr<ID3D11PixelShader> particlePixelShader;
 
-	ID3D11Buffer* vertexParticleConstantBuffer;
+	ComPtr <ID3D11Buffer> vertexParticleConstantBuffer;
 	ComPtr <ID3D11Buffer> dummyParticleBuffer;
 	ComPtr <ID3D11Buffer> vertexParticleBuffer;
 	ComPtr <ID3D11ShaderResourceView> particleSRV;
 	ComPtr <ID3D11UnorderedAccessView> particleUAV;
 
-	void LoadShader(ID3D11Device*& device);
+	void LoadShader(ID3D11Device* device);
 	void LoadShaderData(const std::string& filename, std::string& shaderByteCode);
 
 	//Temp

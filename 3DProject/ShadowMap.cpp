@@ -1,36 +1,34 @@
 #include "ShadowMap.h"
 
 
-ShadowMap::ShadowMap(ID3D11DeviceContext* deviceContext, ID3D11Device* device, unsigned int textureWidth, unsigned int textureHeight,
-	ID3D11Buffer*& pShadowConstantBuffer, ID3D11InputLayout*& inputLayoutSM, std::string& vertexShaderByteCode, ID3D11VertexShader*& vertexShader)
-	:deviceContext(deviceContext), device(device)
+ShadowMap::ShadowMap(ID3D11DeviceContext* deviceContext, ID3D11Device* device, unsigned int textureWidth, unsigned int textureHeight)
 {
 	this->textureWidth = textureWidth;
 	this->textureHeight = textureHeight;
 	this->lightDirection = { 1.0f, -0.5f, 1.0f, 1.0f };
 
-	if (this->CreateShadowMap() == false)
+	if (this->CreateShadowMap(device) == false)
 	{
 		std::cout << "Failed to create Shadow map." << std::endl;
 	}
-	if (this->CreateConstantBufferSM(pShadowConstantBuffer) == false)
+	if (this->CreateConstantBufferSM(device) == false)
 	{
 		std::cout << "Failed to create Shadow Constant Buffer." << std::endl;
 	}
-	if (this->LoadShadowShaders(device, vertexShader, vertexShaderByteCode) == false)
+	if (this->LoadShadowShaders(device) == false)
 	{
 		std::cout << "Failed to load Shadow Shaders." << std::endl;
 	}
-	if (this->CreateInputLayoutSM(inputLayoutSM, vertexShaderByteCode) == false)
+	if (this->CreateInputLayoutSM(device) == false)
 	{
 		std::cout << "Failed to create Input Layout for Shadow map." << std::endl;
 	}
-	CreateShadowSampler();
+	CreateShadowSampler(device);
 
 }
 
 
-void ShadowMap::SetProjectionMatrix(Light* light, ID3D11Buffer*& pShadowConstantBuffer)
+void ShadowMap::SetProjectionMatrix(Light* light, ID3D11DeviceContext* deviceContext)
 {
 
 	float zoom = 1.f;
@@ -58,7 +56,7 @@ void ShadowMap::SetProjectionMatrix(Light* light, ID3D11Buffer*& pShadowConstant
 	DirectX::XMStoreFloat4x4(&this->shadowConstantBufferStruct.LightViewProjectionMatrix, (this->lightViewMatrix * this->lightProjectionMatrix));
 
 	// Update
-	this->deviceContext->UpdateSubresource(pShadowConstantBuffer, 0, nullptr, &this->shadowConstantBufferStruct.LightViewProjectionMatrix, 0, 0); //Is -not- using a struct constant buffer holder atm. 
+	deviceContext->UpdateSubresource(this->shadowConstantBuffer.Get(), 0, nullptr, &this->shadowConstantBufferStruct.LightViewProjectionMatrix, 0, 0); //Is -not- using a struct constant buffer holder atm. 
 }
 
 
@@ -66,7 +64,7 @@ void ShadowMap::SetProjectionMatrix(Light* light, ID3D11Buffer*& pShadowConstant
 
 
 
-bool ShadowMap::CreateShadowMap()
+bool ShadowMap::CreateShadowMap(ID3D11Device* device)
 {
 	D3D11_TEXTURE2D_DESC textureDesc;
 	ZeroMemory(&textureDesc, sizeof(D3D11_TEXTURE2D_DESC));
@@ -90,7 +88,7 @@ bool ShadowMap::CreateShadowMap()
 	textureDesc.CPUAccessFlags = 0;
 	textureDesc.MiscFlags = 0;
 
-	HRESULT hr = this->device->CreateTexture2D(&textureDesc, nullptr, &this->depthMap.texture);
+	HRESULT hr = device->CreateTexture2D(&textureDesc, nullptr, &this->depthMap.texture);
 	if (FAILED(hr))
 	{
 		std::cout << "Could not create depth Texture2D" << std::endl;
@@ -105,7 +103,7 @@ bool ShadowMap::CreateShadowMap()
 	depthStencilDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
 	depthStencilDesc.Texture2D.MipSlice = 0;
 
-	hr = this->device->CreateDepthStencilView(this->depthMap.texture.Get(), &depthStencilDesc, this->depthMap.depthScentilView.GetAddressOf());
+	hr = device->CreateDepthStencilView(this->depthMap.texture.Get(), &depthStencilDesc, this->depthMap.depthScentilView.GetAddressOf());
 
 	if (FAILED(hr))
 	{
@@ -119,7 +117,7 @@ bool ShadowMap::CreateShadowMap()
 	shaderResourceViewDesc.Texture2D.MipLevels = textureDesc.MipLevels;
 	shaderResourceViewDesc.Texture2D.MostDetailedMip = 0;
 
-	hr = this->device->CreateShaderResourceView(this->depthMap.texture.Get(), &shaderResourceViewDesc, this->depthMap.shaderResourceView.GetAddressOf());
+	hr = device->CreateShaderResourceView(this->depthMap.texture.Get(), &shaderResourceViewDesc, this->depthMap.shaderResourceView.GetAddressOf());
 
 	if (FAILED(hr))
 	{
@@ -133,33 +131,33 @@ bool ShadowMap::CreateShadowMap()
 
 
 
-void ShadowMap::shadowPass(Light* light, ID3D11Buffer*& pShadowConstantBuffer, ID3D11VertexShader* vertexShader, ID3D11InputLayout*& inputLayoutSM)
+void ShadowMap::shadowPass(Light* light, ID3D11DeviceContext* deviceContext)
 {
 	ID3D11RenderTargetView* nullRTV[] = { nullptr };
-	this->deviceContext->PSSetSamplers(1, 1, this->depthMap.samplerState.GetAddressOf());
-	this->deviceContext->OMSetRenderTargets(1, nullRTV, this->depthMap.depthScentilView.Get());
-	this->deviceContext->ClearDepthStencilView(this->depthMap.depthScentilView.Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
+	deviceContext->PSSetSamplers(1, 1, this->depthMap.samplerState.GetAddressOf());
+	deviceContext->OMSetRenderTargets(1, nullRTV, this->depthMap.depthScentilView.Get());
+	deviceContext->ClearDepthStencilView(this->depthMap.depthScentilView.Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 
-	this->deviceContext->IASetInputLayout(inputLayoutSM);
-	this->deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	deviceContext->IASetInputLayout(this->inputLayoutSM.Get());
+	deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-	this->SetProjectionMatrix(light, pShadowConstantBuffer);
+	this->SetProjectionMatrix(light, deviceContext);
 
-	this->deviceContext->VSSetConstantBuffers(0, 1, &pShadowConstantBuffer);
-	this->deviceContext->VSSetShader(vertexShader, nullptr, 0);
-	this->deviceContext->PSSetShader(nullptr, nullptr, 0);
-	this->deviceContext->GSSetShader(nullptr, nullptr, 0);
+	deviceContext->VSSetConstantBuffers(0, 1, this->shadowConstantBuffer.GetAddressOf());
+	deviceContext->VSSetShader(this->vertexShader.Get(), nullptr, 0);
+	deviceContext->PSSetShader(nullptr, nullptr, 0);
+	deviceContext->GSSetShader(nullptr, nullptr, 0);
 }
 
 
-bool ShadowMap::CreateInputLayoutSM(ID3D11InputLayout*& inputLayoutSM, std::string& vertexShaderByteCode)
+bool ShadowMap::CreateInputLayoutSM(ID3D11Device* device)
 {
 	D3D11_INPUT_ELEMENT_DESC inputDesc[] =
 	{
 		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0}
 	};
 
-	HRESULT hr = this->device->CreateInputLayout(inputDesc, ARRAYSIZE(inputDesc), vertexShaderByteCode.c_str(), vertexShaderByteCode.length(), &inputLayoutSM);
+	HRESULT hr = device->CreateInputLayout(inputDesc, ARRAYSIZE(inputDesc), this->vertexShaderByteCode.c_str(), this->vertexShaderByteCode.length(), this->inputLayoutSM.GetAddressOf());
 
 	if (FAILED(hr))
 	{
@@ -172,7 +170,7 @@ bool ShadowMap::CreateInputLayoutSM(ID3D11InputLayout*& inputLayoutSM, std::stri
 
 
 
-bool ShadowMap::CreateConstantBufferSM(ID3D11Buffer*& pShadowConstantBuffer)
+bool ShadowMap::CreateConstantBufferSM(ID3D11Device* device)
 {
 	//Information about D3D11_BUFFER_DESC https://docs.microsoft.com/en-us/windows/win32/api/d3d11/ns-d3d11-d3d11_buffer_desc
 	D3D11_BUFFER_DESC constantBufferDesc = {};
@@ -187,21 +185,22 @@ bool ShadowMap::CreateConstantBufferSM(ID3D11Buffer*& pShadowConstantBuffer)
 	constantSubresourceData.SysMemPitch = 0;
 	constantSubresourceData.SysMemSlicePitch = 0;
 
-	HRESULT hr = this->device->CreateBuffer(&constantBufferDesc, &constantSubresourceData, std::addressof(pShadowConstantBuffer));
+	HRESULT hr = device->CreateBuffer(&constantBufferDesc, &constantSubresourceData, this->shadowConstantBuffer.GetAddressOf());
 	return !FAILED(hr);
 }
 
 
 
 
-bool ShadowMap::LoadShadowShaders(ID3D11Device*& device, ID3D11VertexShader*& VertexShader, std::string& vertexShaderByteCode)
+bool ShadowMap::LoadShadowShaders(ID3D11Device* device)
 {
 	std::string pixelShaderData;
 
-	this->LoadShaderData("ShadowVertexShader", vertexShaderByteCode);
+	this->LoadShaderData("ShadowVertexShader", this->vertexShaderByteCode);
 
-	// Create deferred_geometry_vs.
-	if (FAILED(device->CreateVertexShader(vertexShaderByteCode.c_str(), vertexShaderByteCode.length(), nullptr, &VertexShader)))
+	HRESULT hr = device->CreateVertexShader(this->vertexShaderByteCode.c_str(), this->vertexShaderByteCode.length(), nullptr, this->vertexShader.GetAddressOf());
+
+	if FAILED(hr)
 	{
 		std::cout << "Failed to load Shadow Vertex Shader" << std::endl;
 		return false;
@@ -231,7 +230,7 @@ bool ShadowMap::LoadShaderData(const std::string& filename, std::string& shaderB
 	return true;
 }
 
-void ShadowMap::CreateShadowSampler()
+void ShadowMap::CreateShadowSampler(ID3D11Device* device)
 {
 	//Information about D3D11_SAMPLER_DESC https://docs.microsoft.com/en-us/windows/win32/api/d3d11/ns-d3d11-d3d11_sampler_desc
 	D3D11_SAMPLER_DESC desc = {};

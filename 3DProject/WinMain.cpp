@@ -15,7 +15,7 @@
 #include "ShadowMap.h"
 #include "ParticleSystem.h"
 
-void setPerFrameMatrixes(PerFrameMatrixes& object, Camera* camera, ID3D11DeviceContext* immediateContext, ID3D11Buffer*& perFrameConstantBuffer)
+void setPerFrameMatrixes(PerFrameMatrixes& object, Camera* camera, ID3D11DeviceContext* immediateContext, ID3D11Buffer* perFrameConstantBuffer)
 {
 	DirectX::XMStoreFloat4(&object.CameraPosition, camera->getCameraPos());
 	DirectX::XMStoreFloat4x4(&object.ViewMatrix, camera->getCameraView());
@@ -25,10 +25,10 @@ void setPerFrameMatrixes(PerFrameMatrixes& object, Camera* camera, ID3D11DeviceC
 }
 
 //Sending everytihng to the immidiate context (device context) ((screen))
-void geomatryPass(ID3D11DeviceContext*& immediateContext, D3D11_VIEWPORT& viewport, ID3D11VertexShader*& vertexShader,
-	ID3D11PixelShader*& pixelShader, ID3D11InputLayout*& inputLayout, ID3D11Buffer*& pPixelConstantBuffer, 
-	Deferred& deferred, Mesh& objObject, Camera* camera, Mesh& objObject2, ID3D11GeometryShader*& geomatryShader, Mesh& WaterMesh, 
-	Mesh& cubeMesh, ID3D11Buffer*& perFrameConstantBuffer, Mesh& eyeOne, Mesh& platformMesh)
+void geomatryPass(ID3D11DeviceContext* immediateContext, D3D11_VIEWPORT& viewport, ID3D11VertexShader* vertexShader,
+	ID3D11PixelShader* pixelShader, ID3D11InputLayout* inputLayout, ID3D11Buffer* pPixelConstantBuffer, 
+	Deferred& deferred, Mesh& objObject, Camera* camera, Mesh& objObject2, ID3D11GeometryShader* geomatryShader, Mesh& WaterMesh, 
+	Mesh& cubeMesh, ID3D11Buffer* perFrameConstantBuffer, Mesh& eyeOne, Mesh& platformMesh)
 {
 	//immidiate context is the link or "adapter" to the hardwere. This is the thing that makes you see shit on the screen. 
 	float clearColor[4] = { 1,1,1,1 };
@@ -46,18 +46,18 @@ void geomatryPass(ID3D11DeviceContext*& immediateContext, D3D11_VIEWPORT& viewpo
 
 	deferred.setRenderTargets(immediateContext);
 
-	objObject.DrawObjModel(immediateContext, perFrameConstantBuffer, deferred, vertexShader, pixelShader, pPixelConstantBuffer, camera);
+	objObject.DrawObjModel(immediateContext, perFrameConstantBuffer, vertexShader, pixelShader, pPixelConstantBuffer, camera);
 	//objObject2.DrawObjModel(immediateContext, perFrameConstantBuffer, deferred, vertexShader, pixelShader, pPixelConstantBuffer, camera);
-	WaterMesh.DrawObjModel(immediateContext, perFrameConstantBuffer, deferred, vertexShader, pixelShader, pPixelConstantBuffer, camera);
-	cubeMesh.DrawObjModel(immediateContext, perFrameConstantBuffer, deferred, vertexShader, pixelShader, pPixelConstantBuffer, camera);
-	eyeOne.DrawObjModel(immediateContext, perFrameConstantBuffer, deferred, vertexShader, pixelShader, pPixelConstantBuffer, camera);
-	platformMesh.DrawObjModel(immediateContext, perFrameConstantBuffer, deferred, vertexShader, pixelShader, pPixelConstantBuffer, camera);
+	WaterMesh.DrawObjModel(immediateContext, perFrameConstantBuffer, vertexShader, pixelShader, pPixelConstantBuffer, camera);
+	cubeMesh.DrawObjModel(immediateContext, perFrameConstantBuffer, vertexShader, pixelShader, pPixelConstantBuffer, camera);
+	eyeOne.DrawObjModel(immediateContext, perFrameConstantBuffer, vertexShader, pixelShader, pPixelConstantBuffer, camera);
+	platformMesh.DrawObjModel(immediateContext, perFrameConstantBuffer, vertexShader, pixelShader, pPixelConstantBuffer, camera);
 }
 
-void lightPass(ID3D11DeviceContext*& immediateContext, ID3D11RenderTargetView*& renderTargetView, ID3D11VertexShader*& lightPassVertexShader,
-	ID3D11PixelShader*& lightPassPixelShader, ID3D11InputLayout*& inputLayout, ID3D11Buffer*& fullScreenVertexBuffer,
-	ID3D11Buffer*& pConstantBuffer,ID3D11Buffer*& pPixelConstantBuffer, constantBufferMatrixes matrixes, Deferred& deferred, 
-	Light& light, ShadowMap shadowObject, ID3D11Buffer*& perFrameConstantBuffer, ID3D11Buffer*& pShadowConstantBuffer)
+void lightPass(ID3D11DeviceContext* immediateContext, ID3D11RenderTargetView* renderTargetView, ID3D11VertexShader* lightPassVertexShader,
+	ID3D11PixelShader* lightPassPixelShader, ID3D11InputLayout* inputLayout, ID3D11Buffer* fullScreenVertexBuffer,
+	ID3D11Buffer* pConstantBuffer,ID3D11Buffer* pPixelConstantBuffer, constantBufferMatrixes matrixes, Deferred& deferred, 
+	Light& light, ShadowMap shadowObject, ID3D11Buffer* perFrameConstantBuffer, ID3D11Buffer* pShadowConstantBuffer)
 {
 	MatrixFunctions matrixFunction;
 	float clearColor[4] = { 1,1,1,1 };
@@ -128,39 +128,7 @@ int	CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 	// Engine Objects
 	//-----------------------------------------------------------------//
 
-	//All the tihngs needed
 	D3D11_VIEWPORT           viewPort;
-	ID3D11RasterizerState*   rasStateNoCulling   = nullptr; // Back face culling with geomatry shader
-	ID3D11Device*            pDevice             = nullptr;
-	IDXGISwapChain*          pSwapChain          = nullptr;
-	ID3D11DeviceContext*     immediateContext    = nullptr;
-	ID3D11RenderTargetView*  renderTargetView    = nullptr;
-
-	//Shaders
-	ID3D11VertexShader*      vertexShader          = nullptr; // Geomatry pass
-	ID3D11PixelShader*       pixelShader           = nullptr; // Geomatry pass
-	ID3D11VertexShader*      lightPassVertexShader = nullptr; // Light pass
-	ID3D11PixelShader*       lightPassPixelShader  = nullptr; // Light pass
-	ID3D11GeometryShader*    geomatryShader        = nullptr; // Back face culling
-	ID3D11VertexShader*      ShadowVertexShader    = nullptr; // Shadow shader
-
-	ID3D11InputLayout*       inputLayout         = nullptr;
-	ID3D11InputLayout*		 shadowInputLayout   = nullptr;
-
-	//Byte codes
-	std::string              lightPassVertexShaderByteCode;
-	std::string              vertexShaderByteCode;
-	std::string              vertexShadowShaderByteCode;       // Shadow map
-
-	//Buffers
-	ID3D11Buffer*            pConstantBuffer          = nullptr; // Per Object
-	ID3D11Buffer*            pPixelConstantBuffer     = nullptr; // Light buffer
-	ID3D11Buffer*            fullScreenVertexBuffer   = nullptr; // Fullscreen quad
-	ID3D11Buffer*			 pShadowConstantBuffer    = nullptr; // Shadow map
-	ID3D11Buffer*            pPerFrameConstantBuffer  = nullptr; // Per Frame
-
-	ID3D11SamplerState*      sampler                  = nullptr; // Using the repeat thing (Shadow has its own sampler for.. not repeat things)
-
 
 	//-----------------------------------------------------------------//
 	// Matrixes for buffers and stuff
@@ -203,27 +171,9 @@ int	CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 	(
 		WIDTH, HEIGHT,
 		windowHandle,
-		pDevice,
-		immediateContext,
-		pSwapChain,
-		renderTargetView,
 		viewPort,
-		vertexShader,
-		pixelShader,
-		vertexShaderByteCode,
-		inputLayout,
-		pConstantBuffer,
-		sampler,
 		light,
-		pPixelConstantBuffer,
 		perObjectMatrixes,
-		fullScreenVertexBuffer,
-		lightPassVertexShader,
-		lightPassPixelShader,
-		lightPassVertexShaderByteCode,
-		rasStateNoCulling,
-		geomatryShader,
-		pPerFrameConstantBuffer, 
 		perframeMatrixes
 
 	);
@@ -236,7 +186,7 @@ int	CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 	DirectX::XMFLOAT4 particlePosition(-30, 10, -30, 1);
 	Particle particleList[MAX_PARTICLES];
 	ParticleSystem particles;
-	particles.InitializeParticles(pDevice, particleList, particlePosition);
+	particles.InitializeParticles(setUpTheGraphics.pDevice.Get(), particleList, particlePosition);
 
 
 	//-----------------------------------------------------------------//
@@ -245,16 +195,12 @@ int	CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 
 	ShadowMap shadowMap
 	(
-		immediateContext,
-		pDevice,
-		WIDTH, HEIGHT,
-		pShadowConstantBuffer,
-		shadowInputLayout,
-		vertexShadowShaderByteCode,
-		ShadowVertexShader
+		setUpTheGraphics.immediateContext.Get(),
+		setUpTheGraphics.pDevice.Get(),
+		WIDTH, HEIGHT
 	);
 
-	shadowMap.SetProjectionMatrix(&light, pShadowConstantBuffer);
+	shadowMap.SetProjectionMatrix(&light,setUpTheGraphics.immediateContext.Get());
 
 
 	//-----------------------------------------------------------------//
@@ -290,12 +236,12 @@ int	CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 	platformMesh.SetFilePath(filePath);
 
 	//Load models
-	heightPlaneMesh.LoadObjModel(pDevice, fileName2, true);
-	//houseMesh.LoadObjModel(pDevice, fileName, true);
-	waterMesh.LoadObjModel(pDevice, waterMeshPath, true);
-	cubeMesh.LoadObjModel(pDevice, cubePath, true);
-	eyeBall1.LoadObjModel(pDevice, eyeOneFile, true);
-	platformMesh.LoadObjModel(pDevice, platFormFile, true);
+	heightPlaneMesh.LoadObjModel(setUpTheGraphics.pDevice.Get(), fileName2, true);
+	//houseMesh.LoadObjModel(setUpTheGraphics.pDevice.Get(), fileName, true);
+	waterMesh.LoadObjModel(setUpTheGraphics.pDevice.Get(), waterMeshPath, true);
+	cubeMesh.LoadObjModel(setUpTheGraphics.pDevice.Get(), cubePath, true);
+	eyeBall1.LoadObjModel(setUpTheGraphics.pDevice.Get(), eyeOneFile, true);
+	platformMesh.LoadObjModel(setUpTheGraphics.pDevice.Get(), platFormFile, true);
 
 	waterMesh.Animation(true);
 	cubeMesh.Animation(true);
@@ -316,7 +262,7 @@ int	CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 
 	//Deferred
 	Deferred deffered;
-	deffered.instalize(pDevice, WIDTH, HEIGHT, 0.001f, 15.0f);
+	deffered.instalize(setUpTheGraphics.pDevice.Get(), WIDTH, HEIGHT, 0.001f, 15.0f);
 
 	//Delta
 	using ms = std::chrono::duration<float, std::milli>;
@@ -354,7 +300,7 @@ int	CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 			//-----------------------------------------------------------------//
 			auto start = timer.now();
 
-			setPerFrameMatrixes(perframeMatrixes, walkingCamera, immediateContext, pPerFrameConstantBuffer);
+			setPerFrameMatrixes(perframeMatrixes, walkingCamera, setUpTheGraphics.immediateContext.Get(), setUpTheGraphics.pPerFrameConstantBuffer.Get());
 
 			float x = DirectX::XMVectorGetX(walkingCamera->getCameraPos());
 			float y = walkingCamera->getGameraYPos();
@@ -374,27 +320,26 @@ int	CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 			// Geomatry pass, Shadow pass, Light pass and Particle Update
 			//-----------------------------------------------------------------//
 
-			immediateContext->RSSetViewports(1, &viewPort); //Is needed at top always. 
-			immediateContext->PSSetSamplers(1,1,shadowMap.depthMap.samplerState.GetAddressOf());
-			shadowMap.depthMap.samplerState;
-			immediateContext->PSSetSamplers(0, 1, &sampler);
+			setUpTheGraphics.immediateContext.Get()->RSSetViewports(1, &viewPort); //Is needed at top always. 
+			setUpTheGraphics.immediateContext.Get()->PSSetSamplers(1,1,shadowMap.depthMap.samplerState.GetAddressOf());
+			setUpTheGraphics.immediateContext.Get()->PSSetSamplers(0, 1, setUpTheGraphics.sampler.GetAddressOf());
 
 			geomatryPass
 			(
-				immediateContext,
+				setUpTheGraphics.immediateContext.Get(),
 				viewPort,
-				vertexShader,
-				pixelShader,
-				inputLayout,
-				pPixelConstantBuffer,
+				setUpTheGraphics.vertexShader.Get(),
+				setUpTheGraphics.pixelShader.Get(),
+				setUpTheGraphics.inputLayout.Get(),
+				setUpTheGraphics.pPixelConstantBuffer.Get(),
 				deffered,
 				heightPlaneMesh,
 				walkingCamera,
 				houseMesh,
-				geomatryShader,
+				setUpTheGraphics.geomatryShader.Get(),
 				waterMesh,
 				cubeMesh,
-				pConstantBuffer,
+				setUpTheGraphics.pConstantBuffer.Get(),
 				eyeBall1,
 				platformMesh
 
@@ -402,42 +347,42 @@ int	CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 			
 
 			//Stuff that happenes in the ShadowMap class.
-			shadowMap.shadowPass(&light, pShadowConstantBuffer, ShadowVertexShader, shadowInputLayout); 
+			shadowMap.shadowPass(&light,setUpTheGraphics.immediateContext.Get()); 
 
 			//Stuff that happenes in the Mesh class.
-			cubeMesh.DrawShadow(immediateContext, walkingCamera, pPerFrameConstantBuffer);
+			cubeMesh.DrawShadow(setUpTheGraphics.immediateContext.Get(), walkingCamera, setUpTheGraphics.pPerFrameConstantBuffer.Get());
 			//houseMesh.DrawShadow(immediateContext, walkingCamera, pPerFrameConstantBuffer);
-			eyeBall1.DrawShadow(immediateContext, walkingCamera, pPerFrameConstantBuffer);
-			platformMesh.DrawShadow(immediateContext, walkingCamera, pPerFrameConstantBuffer);
+			eyeBall1.DrawShadow(setUpTheGraphics.immediateContext.Get(), walkingCamera, setUpTheGraphics.pPerFrameConstantBuffer.Get());
+			platformMesh.DrawShadow(setUpTheGraphics.immediateContext.Get(), walkingCamera, setUpTheGraphics.pPerFrameConstantBuffer.Get());
 
 			
 			lightPass
 			(
-				immediateContext,
-				renderTargetView,
-				lightPassVertexShader,
-				lightPassPixelShader,
-				inputLayout,
-				fullScreenVertexBuffer,
-				pConstantBuffer,
-				pPixelConstantBuffer,
+				setUpTheGraphics.immediateContext.Get(),
+				setUpTheGraphics.renderTargetView.Get(),
+				setUpTheGraphics.lightPassVertexShader.Get(),
+				setUpTheGraphics.lightPassPixelShader.Get(),
+				setUpTheGraphics.inputLayout.Get(),
+				setUpTheGraphics.fullScreenVertexBuffer.Get(),
+				setUpTheGraphics.pConstantBuffer.Get(),
+				setUpTheGraphics.pPixelConstantBuffer.Get(),
 				perObjectMatrixes,
 				deffered,
 				light,
 				shadowMap,
-				pPerFrameConstantBuffer,
-				pShadowConstantBuffer
+				setUpTheGraphics.pPerFrameConstantBuffer.Get(),
+				shadowMap.shadowConstantBuffer.Get()
 
 			);
 			
 
 
-			particles.particlePass(immediateContext, walkingCamera);
+			particles.particlePass(setUpTheGraphics.immediateContext.Get(), walkingCamera);
 
-			immediateContext->ClearState();
-			immediateContext->Flush();
+			//immediateContext->ClearState();
+			//immediateContext->Flush();
 			//Shows the front buffer
-			pSwapChain->Present(1, 0);
+			setUpTheGraphics.pSwapChain.Get()->Present(1, 0);
 
 			auto stop = timer.now();
 			using ms = std::chrono::duration<float, std::milli>;
@@ -450,23 +395,23 @@ int	CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 	//-----------------------------------------------------------------//
 
 	ID3D11Debug* pDebug = nullptr;
-	pDevice->QueryInterface(IID_PPV_ARGS(&pDebug));
-	immediateContext->ClearState();
-	immediateContext->Flush();
+	setUpTheGraphics.pDevice.Get()->QueryInterface(IID_PPV_ARGS(&pDebug));
+	//immediateContext->ClearState();
+	//immediateContext->Flush();
 
 	//Get rid of some of them memoryleaks
 	//pDevice->Release();
 	//pDevice->Release();
 	//pDevice = 0;
 
-	//heightPlaneMesh.ShutDown();
-	//houseMesh.ShutDown();
-	//waterMesh.ShutDown();
-	//cubeMesh.ShutDown();
-	//eyeBall1.ShutDown();
-	//platformMesh.ShutDown();
+	heightPlaneMesh.ShutDown();
+	houseMesh.ShutDown();
+	waterMesh.ShutDown();
+	cubeMesh.ShutDown();
+	eyeBall1.ShutDown();
+	platformMesh.ShutDown();
 
-	//deffered.shutDown();
+	deffered.shutDown();
 
 	////rasStateNoCulling->Release();
 	//pSwapChain->Release();
@@ -514,15 +459,15 @@ int	CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 	//lightPassVertexShader = 0;
 	//lightPassPixelShader = 0;
 
-	//delete walkingCamera;
+	delete walkingCamera;
 	//immediateContext->ClearState();
 	//immediateContext->Flush();
 	//immediateContext = nullptr;
 
-	//pDebug->ReportLiveDeviceObjects(D3D11_RLDO_DETAIL);
+	pDebug->ReportLiveDeviceObjects(D3D11_RLDO_DETAIL);
 
-	//pDebug->Release();
-	//pDebug = 0;
+	pDebug->Release();
+	pDebug = 0;
 
 
 	if (gResult == -1)

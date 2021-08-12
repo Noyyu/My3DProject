@@ -9,21 +9,22 @@ class ShadowMap
 private:
 	unsigned int textureWidth;
 	unsigned int textureHeight;
-
-	ComPtr<ID3D11Device> device;
-	ComPtr<ID3D11DeviceContext> deviceContext;
+	
+	ComPtr<ID3D11InputLayout> inputLayoutSM;
+	ComPtr<ID3D11VertexShader> vertexShader;
+	std::string vertexShaderByteCode;
 
 	DirectX::XMFLOAT4X4 lightViewProjectionMatrix;
 	DirectX::XMMATRIX lightProjectionMatrix;
 	DirectX::XMMATRIX lightViewMatrix;
 	DirectX::XMFLOAT4 lightDirection;
 	
-	bool CreateShadowMap();
-	bool CreateInputLayoutSM(ID3D11InputLayout*& inputLayoutSM, std::string& vertexShaderByteCode);
-	bool CreateConstantBufferSM(ID3D11Buffer*& pShadowConstantBuffer); //Is to be filled with the lightViewProjectionMatrix. Needs constant buffer.
-	bool LoadShadowShaders(ID3D11Device*& device, ID3D11VertexShader*& VertexShader, std::string& vertexShaderByteCode);
+	bool CreateShadowMap(ID3D11Device* device);
+	bool CreateInputLayoutSM(ID3D11Device* device);
+	bool CreateConstantBufferSM(ID3D11Device* device); //Is to be filled with the lightViewProjectionMatrix. Needs constant buffer.
+	bool LoadShadowShaders(ID3D11Device* device);
 	bool LoadShaderData(const std::string& filename, std::string& shaderByteCode);
-	void CreateShadowSampler();
+	void CreateShadowSampler(ID3D11Device* device);
 
 public:
 
@@ -38,12 +39,12 @@ public:
 	DepthMap depthMap;
 	ShadowConstantBuffer shadowConstantBufferStruct;
 	ComPtr<ID3D11InputLayout> *shadowInputLayout;
+	ComPtr<ID3D11Buffer> shadowConstantBuffer;
 
-	ShadowMap(ID3D11DeviceContext* deviceContext, ID3D11Device* device, unsigned int textureWidth, unsigned int textureheighte,
-			  ID3D11Buffer*& pShadowConstantBuffer, ID3D11InputLayout*& inputLayoutSM, std::string& vertexShaderByteCode, ID3D11VertexShader*& vertexShader);
+	ShadowMap(ID3D11DeviceContext* deviceContext, ID3D11Device* device, unsigned int textureWidth, unsigned int textureheighte);
 	virtual ~ShadowMap() = default;
 
-	void shadowPass(Light* light, ID3D11Buffer*& pShadowConstantBuffer, ID3D11VertexShader* vertexShader, ID3D11InputLayout*& inputLayoutSM); //Needs constant buffer probably.
-	void SetProjectionMatrix(Light* light, ID3D11Buffer*& pShadowConstantBuffer); //needs constantbuffer
+	void shadowPass(Light* light, ID3D11DeviceContext* deviceContext); //Needs constant buffer probably.
+	void SetProjectionMatrix(Light* light, ID3D11DeviceContext* deviceContext); //needs constantbuffer
 
 };

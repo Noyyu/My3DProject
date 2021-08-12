@@ -1,4 +1,5 @@
 #pragma once
+#include"pch.h"
 #include<d3d11.h>
 #include<DirectXMath.h>
 
@@ -8,21 +9,21 @@ class Deferred
 {
 private:
 	//Deferred rendering textures
-	ID3D11Texture2D* normalData = nullptr;
-	ID3D11Texture2D* positionData = nullptr;
-	ID3D11Texture2D* diffuseData = nullptr;
+	ComPtr <ID3D11Texture2D> normalData;
+	ComPtr <ID3D11Texture2D> positionData;
+	ComPtr <ID3D11Texture2D> diffuseData;
 
-	ID3D11RenderTargetView* normalTargetView = nullptr;
-	ID3D11RenderTargetView* positionTargetView = nullptr;
-	ID3D11RenderTargetView* diffuseTargetView = nullptr;
+	ComPtr <ID3D11RenderTargetView> normalTargetView;
+	ComPtr <ID3D11RenderTargetView> positionTargetView;
+	ComPtr <ID3D11RenderTargetView> diffuseTargetViewr;
 
-	ID3D11ShaderResourceView* normalResourceView = nullptr;
-	ID3D11ShaderResourceView* positionResourceView = nullptr;
-	ID3D11ShaderResourceView* diffuseResourceView = nullptr;
+	ComPtr <ID3D11ShaderResourceView> normalResourceView;
+	ComPtr <ID3D11ShaderResourceView> positionResourceView;
+	ComPtr <ID3D11ShaderResourceView> diffuseResourceView;
 
 	//temp depth things:
-	ID3D11Texture2D* depthData = nullptr;
-	ID3D11DepthStencilView* depthStencilView = nullptr;
+	ComPtr <ID3D11Texture2D> depthData;
+	ComPtr <ID3D11DepthStencilView> depthStencilView;
 
 	int textureHeight = 500;
 	int	textureWidth = 500;
@@ -34,13 +35,13 @@ public:
 	Deferred();
 	~Deferred();
 
-	bool instalize(ID3D11Device* &device, int textureWidth, int textureHight, float screenDepth, float screenNear);
-	void setRenderTargets(ID3D11DeviceContext*& deviceContext);
-	void clearRenderTargets(ID3D11DeviceContext*& deviceContex);
+	bool instalize(ID3D11Device* device, int textureWidth, int textureHight, float screenDepth, float screenNear);
+	void setRenderTargets(ID3D11DeviceContext* deviceContext);
+	void clearRenderTargets(ID3D11DeviceContext* deviceContex);
 	ID3D11ShaderResourceView* getShaderResourceView(int index);
-	void setShaderResourceView(ID3D11DeviceContext*& deviceContext, ID3D11ShaderResourceView* shadowResourceView);
-	void unbindShaderResourceView(ID3D11DeviceContext*& deviceContext);
-	void setLightPassRenderTarget(ID3D11RenderTargetView*& renderTargetView, ID3D11DeviceContext*& deviceContext);
+	void setShaderResourceView(ID3D11DeviceContext* deviceContext, ID3D11ShaderResourceView* shadowResourceView);
+	void unbindShaderResourceView(ID3D11DeviceContext* deviceContext);
+	void setLightPassRenderTarget(ID3D11RenderTargetView* renderTargetView, ID3D11DeviceContext* deviceContext);
 
 	//Temp
 	void shutDown();

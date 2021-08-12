@@ -2,20 +2,20 @@
 
 Deferred::Deferred()
 {
-	normalData = 0;
-	positionData = 0; 
-	diffuseData = 0;
-	depthData = 0;
+	//normalData = 0;
+	//positionData = 0; 
+	//diffuseData = 0;
+	//depthData = 0;
 
-	normalTargetView = 0; 
-	positionTargetView = 0;
-	diffuseTargetView = 0;
+	//normalTargetView = 0; 
+	//positionTargetView = 0;
+	//diffuseTargetView = 0;
 
-	normalResourceView = 0;
-	positionResourceView = 0;
-	diffuseResourceView = 0;
+	//normalResourceView = 0;
+	//positionResourceView = 0;
+	//diffuseResourceView = 0;
 
-	depthData = 0;
+	//depthData = 0;
 
 	textureHeight = 500;
 	textureWidth = 500;
@@ -54,7 +54,7 @@ Deferred::~Deferred()
 	//depthStencilView = 0;
 }
 
-bool Deferred::instalize(ID3D11Device*& device, int textureWidth, int textureHeight, float screenDepth, float screenNear)
+bool Deferred::instalize(ID3D11Device* device, int textureWidth, int textureHeight, float screenDepth, float screenNear)
 {
 	HRESULT result;
 	this->textureHeight = textureHeight;
@@ -88,11 +88,11 @@ bool Deferred::instalize(ID3D11Device*& device, int textureWidth, int textureHei
 	renderTargetViewDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
 	renderTargetViewDesc.Texture2D.MipSlice = 0;
 
-	result = device->CreateRenderTargetView(normalData, &renderTargetViewDesc, &normalTargetView);
+	result = device->CreateRenderTargetView(normalData.Get(), &renderTargetViewDesc, normalTargetView.GetAddressOf());
 	if (FAILED(result)) { return false; };
-	result = device->CreateRenderTargetView(positionData, &renderTargetViewDesc, &positionTargetView);
+	result = device->CreateRenderTargetView(positionData.Get(), &renderTargetViewDesc, positionTargetView.GetAddressOf());
 	if (FAILED(result)) { return false; };
-	result = device->CreateRenderTargetView(diffuseData, &renderTargetViewDesc, &diffuseTargetView);
+	result = device->CreateRenderTargetView(diffuseData.Get(), &renderTargetViewDesc, diffuseTargetViewr.GetAddressOf());
 	if (FAILED(result)) { return false; };
 
 	//-------- Set up SHADER RESOURCE VIEW DESCRIPTION ---------//
@@ -102,11 +102,11 @@ bool Deferred::instalize(ID3D11Device*& device, int textureWidth, int textureHei
 	shaderResourceViewDesc.Texture2D.MostDetailedMip = 0;
 	shaderResourceViewDesc.Texture2D.MipLevels = 1;
 
-	result = device->CreateShaderResourceView(normalData, &shaderResourceViewDesc, &normalResourceView);
+	result = device->CreateShaderResourceView(normalData.Get(), &shaderResourceViewDesc, normalResourceView.GetAddressOf());
 	if (FAILED(result)) { return false; };
-	result = device->CreateShaderResourceView(positionData, &shaderResourceViewDesc, &positionResourceView);
+	result = device->CreateShaderResourceView(positionData.Get(), &shaderResourceViewDesc, positionResourceView.GetAddressOf());
 	if (FAILED(result)) { return false; };
-	result = device->CreateShaderResourceView(diffuseData, &shaderResourceViewDesc, &diffuseResourceView);
+	result = device->CreateShaderResourceView(diffuseData.Get(), &shaderResourceViewDesc, diffuseResourceView.GetAddressOf());
 	if (FAILED(result)) { return false; };
 
 
@@ -126,7 +126,7 @@ bool Deferred::instalize(ID3D11Device*& device, int textureWidth, int textureHei
 	depthTextureDesc.CPUAccessFlags = 0; // read or write.
 	depthTextureDesc.MiscFlags = 0;
 
-	result = (device->CreateTexture2D(&depthTextureDesc, nullptr, &depthData));
+	result = (device->CreateTexture2D(&depthTextureDesc, nullptr, depthData.GetAddressOf()));
 	if (FAILED(result)) { return false; };
 
 
@@ -137,7 +137,7 @@ bool Deferred::instalize(ID3D11Device*& device, int textureWidth, int textureHei
 	depthStencilViewDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
 	depthStencilViewDesc.Texture2D.MipSlice = 0;
 
-	result = (device->CreateDepthStencilView(depthData, &depthStencilViewDesc, &depthStencilView));
+	result = (device->CreateDepthStencilView(depthData.Get(), &depthStencilViewDesc, depthStencilView.GetAddressOf()));
 	if (FAILED(result)) { return false; };
 
 
@@ -155,29 +155,29 @@ bool Deferred::instalize(ID3D11Device*& device, int textureWidth, int textureHei
 	return true;
 }
 
-void Deferred::setRenderTargets(ID3D11DeviceContext*& deviceContext)
+void Deferred::setRenderTargets(ID3D11DeviceContext* deviceContext)
 {
-	ID3D11RenderTargetView* targets[3] = { normalTargetView, positionTargetView, diffuseTargetView};
+	ID3D11RenderTargetView* targets[3] = { normalTargetView.Get(), positionTargetView.Get(), diffuseTargetViewr.Get()};
 
 	// Bind the render target view array and depth stencil buffer to the output render pipeline.
-	deviceContext->OMSetRenderTargets(3, targets, depthStencilView);
+	deviceContext->OMSetRenderTargets(3, targets, depthStencilView.Get());
 
 	// Set the viewport.
 	deviceContext->RSSetViewports(1, &viewport);
 
 }
 
-void Deferred::clearRenderTargets(ID3D11DeviceContext*& deviceContext)
+void Deferred::clearRenderTargets(ID3D11DeviceContext* deviceContext)
 {
 	float color[4];
 
 	// Setup the color to clear the buffer to.
 	float clearColor[4] = { 0,0,0,0 };
 
-	deviceContext->ClearRenderTargetView(normalTargetView, clearColor);
-	deviceContext->ClearRenderTargetView(positionTargetView, clearColor);
-	deviceContext->ClearRenderTargetView(diffuseTargetView, clearColor);
-	deviceContext->ClearDepthStencilView(depthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0);
+	deviceContext->ClearRenderTargetView(normalTargetView.Get(), clearColor);
+	deviceContext->ClearRenderTargetView(positionTargetView.Get(), clearColor);
+	deviceContext->ClearRenderTargetView(diffuseTargetViewr.Get(), clearColor);
+	deviceContext->ClearDepthStencilView(depthStencilView.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0);
 	
 }
 
@@ -185,28 +185,28 @@ ID3D11ShaderResourceView* Deferred::getShaderResourceView(int index)
 {
 	if (index == 0)
 	{
-		return normalResourceView;
+		return normalResourceView.Get();
 	}
 	if (index == 1)
 	{
-		return positionResourceView;
+		return positionResourceView.Get();
 	}
 	if (index == 2)
 	{
-		return diffuseResourceView;
+		return diffuseResourceView.Get();
 	}
 }
 
-void Deferred::setShaderResourceView(ID3D11DeviceContext*& deviceContext, ID3D11ShaderResourceView* shadowResourceView)
+void Deferred::setShaderResourceView(ID3D11DeviceContext* deviceContext, ID3D11ShaderResourceView* shadowResourceView)
 {
-	ID3D11ShaderResourceView* targets[4] = { normalResourceView, positionResourceView, diffuseResourceView, shadowResourceView}; //Binds the textures from the geomatry pass to the light pass
+	ID3D11ShaderResourceView* targets[4] = { normalResourceView.Get(), positionResourceView.Get(), diffuseResourceView.Get(), shadowResourceView}; //Binds the textures from the geomatry pass to the light pass
 
 	// Bind the render target view array and depth stencil buffer to the output render pipeline.
 	deviceContext->PSSetShaderResources(0, 4, targets);
 	
 }
 
-void Deferred::unbindShaderResourceView(ID3D11DeviceContext*& deviceContext)
+void Deferred::unbindShaderResourceView(ID3D11DeviceContext* deviceContext)
 {
 	ID3D11ShaderResourceView* const kill[4] = { nullptr };
 	deviceContext->PSSetShaderResources(0, 4, kill);
@@ -217,40 +217,40 @@ void Deferred::unbindShaderResourceView(ID3D11DeviceContext*& deviceContext)
 	}
 }
 
-void Deferred::setLightPassRenderTarget(ID3D11RenderTargetView*& renderTargetView, ID3D11DeviceContext*& deviceContext)
+void Deferred::setLightPassRenderTarget(ID3D11RenderTargetView* renderTargetView, ID3D11DeviceContext* deviceContext)
 {
-	deviceContext->OMSetRenderTargets(1, &renderTargetView, depthStencilView);
+	deviceContext->OMSetRenderTargets(1, &renderTargetView, depthStencilView.Get());
 }
 
 void Deferred::shutDown()
 {
-	normalData->Release();
-	positionData->Release();
-	diffuseData->Release();
+	//normalData->Release();
+	//positionData->Release();
+	//diffuseData->Release();
 
-	normalTargetView->Release();
-	positionTargetView->Release();
-	diffuseTargetView->Release();
+	//normalTargetView->Release();
+	//positionTargetView->Release();
+	//diffuseTargetView->Release();
 
-	normalResourceView->Release();
-	positionResourceView->Release();
-	diffuseResourceView->Release();
+	//normalResourceView->Release();
+	//positionResourceView->Release();
+	//diffuseResourceView->Release();
 
-	depthData->Release();
-	depthStencilView->Release();
+	//depthData->Release();
+	//depthStencilView->Release();
 
-	normalData = 0;
-	positionData = 0;
-	diffuseData = 0;
+	//normalData = 0;
+	//positionData = 0;
+	//diffuseData = 0;
 
-	normalTargetView = 0;
-	positionTargetView = 0;
-	diffuseTargetView = 0;
+	//normalTargetView = 0;
+	//positionTargetView = 0;
+	//diffuseTargetView = 0;
 
-	normalResourceView = 0;
-	positionResourceView = 0;
-	diffuseResourceView = 0;
+	//normalResourceView = 0;
+	//positionResourceView = 0;
+	//diffuseResourceView = 0;
 
-	depthData = 0;
-	depthStencilView = 0;
+	//depthData = 0;
+	//depthStencilView = 0;
 }

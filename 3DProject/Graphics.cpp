@@ -4,22 +4,16 @@
 #include <vector>
 #include "stb_image.h"
 
-Graphics::Graphics(UINT width, UINT height, HWND windowHandle, ID3D11Device*& pDevice, ID3D11DeviceContext*& immediateContext,
-	IDXGISwapChain*& pSwapChain, ID3D11RenderTargetView*& renderTargetView, D3D11_VIEWPORT& viewport, ID3D11VertexShader*& VertexShader, 
-	ID3D11PixelShader*& pixelShader, std::string& vertexShaderByteCode, ID3D11InputLayout*& inputLayout,ID3D11Buffer*& pConstantBuffer,
-	ID3D11SamplerState*& sampler, Light& light, ID3D11Buffer*& pPixelConstantBuffer, constantBufferMatrixes matrixes, ID3D11Buffer*& FullScreenVertexBuffer,
-	ID3D11VertexShader*& finalPassVertexShader, ID3D11PixelShader*& finalPassPixelShader,std::string& lightPassVertexShaderByteCode, 
-	ID3D11RasterizerState* rasStateNoCulling, ID3D11GeometryShader*& geomatryShader, 
-	ID3D11Buffer*& pPerFrameConstantBuffer, PerFrameMatrixes perFrameStruct)
+Graphics::Graphics(UINT width, UINT height, HWND windowHandle, D3D11_VIEWPORT& viewport, Light& light, constantBufferMatrixes matrixes, PerFrameMatrixes perFrameStruct)
 {
 	//... SETING UP D3D11 THINGS ...//
 	//////////////////////////////
 
 	//... Create interface
-	createInterface(width, height, windowHandle, pSwapChain, pDevice, immediateContext);
+	createInterface(width, height, windowHandle);
 
 	//... Create render tager view //
-	createRenderTargetView(pSwapChain, pDevice, renderTargetView);
+	createRenderTargetView();
 
 	//... Set viewport //
 	setViewport(viewport, width, height);
@@ -29,38 +23,38 @@ Graphics::Graphics(UINT width, UINT height, HWND windowHandle, ID3D11Device*& pD
 	//////////////////////////////
 
 	//... Create Rasterizer States //
-	createRasterizerStates(pDevice, rasStateNoCulling, immediateContext);
+	createRasterizerStates();
 
 	//... Create constant buffer for vertex shader //
-	createConstantBuffer(pDevice, pConstantBuffer, matrixes);
+	createConstantBuffer(matrixes);
 
 	//... Create constant buffer for pixel shader (Light buffer) // 
-	createPixelConstantBuffer(pDevice, light, pPixelConstantBuffer);
+	createPixelConstantBuffer(light);
 
 	//... Create  Sampler //
-	createSamplerState(pDevice, sampler);
+	createSamplerState();
 
 	//... Load pixel, geomatry and vertex shaders for geomatry pass //
-	loadShader(pDevice, VertexShader, pixelShader, vertexShaderByteCode, geomatryShader);
+	loadShader();
 
 	//... Creating input layer //
-	createInputLayout(pDevice, inputLayout, vertexShaderByteCode);
+	createInputLayout();
 
 	//... Creates the full screen quad //
-	fullScreenQuadVertexBuffer(pDevice, FullScreenVertexBuffer);
+	fullScreenQuadVertexBuffer();
 
 	//... Load pixel and vertex shaders for light pass //
-	loadLightPassShaders(pDevice, lightPassVertexShaderByteCode, finalPassVertexShader, finalPassPixelShader);
+	loadLightPassShaders();
 
 	//.. Create Per Frame Constant Buffer //
-	createPerFrameBuffer(pDevice, pPerFrameConstantBuffer, perFrameStruct);
+	createPerFrameBuffer(perFrameStruct);
 }
 
 Graphics::~Graphics()
 {
 }
 
-bool Graphics::createInterface(UINT width, UINT height, HWND windowHandle, IDXGISwapChain*& pSwapChain, ID3D11Device*& pDevice, ID3D11DeviceContext*& immediateContext)
+bool Graphics::createInterface(UINT width, UINT height, HWND windowHandle)
 {
 	//Information about DXGI_SWAP_CHAIN_DESC https://docs.microsoft.com/en-us/windows/win32/api/dxgi/ns-dxgi-dxgi_swap_chain_desc
 
@@ -91,33 +85,31 @@ bool Graphics::createInterface(UINT width, UINT height, HWND windowHandle, IDXGI
 		0,
 		D3D11_SDK_VERSION,// Use the sdk verion you got on your system
 		&swapChainDesc,
-		&pSwapChain,
-		&pDevice,
+		&this->pSwapChain,
+		&this->pDevice,
 		nullptr,
-		&immediateContext
+		&this->immediateContext
 	);
 
-	pDevice->Release();
 	return !(FAILED(hr));
 	
 }
 
-bool Graphics::createRenderTargetView(IDXGISwapChain*& pSwapChain, ID3D11Device*& pDevice, ID3D11RenderTargetView*& renderTargetView) //Has something to do with the backbuffer
+bool Graphics::createRenderTargetView() //Has something to do with the backbuffer
 {
 	// Gains access to texture subresource in swap chain (back buffer)
 	ID3D11Texture2D* pBackBuffer = nullptr;
 	//1: gets index of the buffer we want to get, 0 = backbuffer. 2: what id we want to get back, 3: we give it the pointer
 	//This gets the back buffer btw
-	pSwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast<void**>(&pBackBuffer));
+	this->pSwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast<void**>(&pBackBuffer));
 	//Creates renderTarget
-	HRESULT hr = pDevice->CreateRenderTargetView(pBackBuffer, nullptr, &renderTargetView);
+	HRESULT hr = this->pDevice->CreateRenderTargetView(pBackBuffer, nullptr, this->renderTargetView.GetAddressOf());
 	pBackBuffer->Release();
-	pDevice->Release();
-	pSwapChain->Release();
+
 	return !(FAILED(hr));
 }
 
-bool Graphics::fullScreenQuadVertexBuffer(ID3D11Device*& pDevice, ID3D11Buffer*& vertexBuffer)
+bool Graphics::fullScreenQuadVertexBuffer()
 {
 	Vertex quad[6] =
 	{
@@ -146,12 +138,12 @@ bool Graphics::fullScreenQuadVertexBuffer(ID3D11Device*& pDevice, ID3D11Buffer*&
 	bufferDesc.StructureByteStride = sizeof(Vertex);
 	D3D11_SUBRESOURCE_DATA subresourceData = { 0 };
 	subresourceData.pSysMem = quad;
-	HRESULT hr = pDevice->CreateBuffer(&bufferDesc, &subresourceData, &vertexBuffer);
-	pDevice->Release();
+	HRESULT hr = this->pDevice->CreateBuffer(&bufferDesc, &subresourceData, this->fullScreenVertexBuffer.GetAddressOf());
+	//pDevice->Release();
 	return !FAILED(hr);
 }
 
-bool Graphics::loadShader(ID3D11Device*& device, ID3D11VertexShader*& VertexShader, ID3D11PixelShader*& pixelShader, std::string& vertexShaderByteCode, ID3D11GeometryShader*& geomatryShader)
+bool Graphics::loadShader()
 {
 	///------ GEOMATRY PASS SHADERS ------///
 
@@ -161,43 +153,42 @@ bool Graphics::loadShader(ID3D11Device*& device, ID3D11VertexShader*& VertexShad
 	std::string geomatryShaderData;
 	std::string computeShaderData;
 
-	this->loadShaderData("VertexShader", vertexShaderByteCode);
+	this->loadShaderData("VertexShader", this->vertexShaderByteCode);
 	this->loadShaderData("PixelShader", pixelShaderData);
 	this->loadShaderData("GeomatryShader", geomatryShaderData);
 
 
-	if (FAILED(device->CreateVertexShader(vertexShaderByteCode.c_str(), vertexShaderByteCode.length(), nullptr, &VertexShader)))
+	if (FAILED(this->pDevice->CreateVertexShader(this->vertexShaderByteCode.c_str(), this->vertexShaderByteCode.length(), nullptr, &this->vertexShader)))
 	{
 		std::cout << "ERROR::loadGeomatryPassShaders:: Could not create GEOMATRY_PASS_VERTEX_SHADER" << std::endl;
 		return false;
 	}
 
-	if (FAILED(device->CreatePixelShader(pixelShaderData.c_str(), pixelShaderData.length(), nullptr, &pixelShader)))
+	if (FAILED(this->pDevice->CreatePixelShader(pixelShaderData.c_str(), pixelShaderData.length(), nullptr, &this->pixelShader)))
 	{
 		std::cout << "ERROR::loadGeomatryPassShaders:: Could not create GEOMATRY_PASS_PIXEL_SHADER" << std::endl;
 		return false;
 	}
 
-	if (FAILED(device->CreateGeometryShader(geomatryShaderData.c_str(), geomatryShaderData.length(), nullptr, &geomatryShader)))
+	if (FAILED(this->pDevice->CreateGeometryShader(geomatryShaderData.c_str(), geomatryShaderData.length(), nullptr, &this->geomatryShader)))
 	{
 		std::cout << "ERROR::loadGeomatryPassShaders:: Could not create GEOMATRY_PASS_GEOMATRY_SHADER" << std::endl;
 		return false;
 	}
-	device->Release();
 }
 
-bool Graphics::loadLightPassShaders(ID3D11Device*& device, std::string& lightPassVertexShaderByteCode, ID3D11VertexShader*& finalPassVertexShader, ID3D11PixelShader*& finalPassPixelShader)
+bool Graphics::loadLightPassShaders()
 {
 	///------ LIGHT PASS SHADERS ------///
 
 	std::string pixelShaderData = {};
 
-	this->loadShaderData("finalPassVertexShader", lightPassVertexShaderByteCode);
+	this->loadShaderData("finalPassVertexShader", this->lightPassVertexShaderByteCode);
 	this->loadShaderData("finalPassPixelShader", pixelShaderData);
 
 
 	// Create deferred_geometry_vs.
-	if (FAILED(device->CreateVertexShader(lightPassVertexShaderByteCode.c_str(), lightPassVertexShaderByteCode.length(), nullptr, &finalPassVertexShader)))
+	if (FAILED(this->pDevice->CreateVertexShader(this->lightPassVertexShaderByteCode.c_str(), this->lightPassVertexShaderByteCode.length(), nullptr, &this->lightPassVertexShader)))
 	{
 		std::cout << "ERROR::loadLightPassShaders:: Could not create LIGHT_PASS_VERTEX_SHADER" << std::endl;
 		return false;
@@ -205,12 +196,12 @@ bool Graphics::loadLightPassShaders(ID3D11Device*& device, std::string& lightPas
 
 
 	// Create deferred_geometry_vs.
-	if (FAILED(device->CreatePixelShader(pixelShaderData.c_str(), pixelShaderData.length(), nullptr, &finalPassPixelShader)))
+	if (FAILED(this->pDevice->CreatePixelShader(pixelShaderData.c_str(), pixelShaderData.length(), nullptr, &this->lightPassPixelShader)))
 	{
 		std::cout << "ERROR::loadLightPassShaders:: Could not create LIGHT_PASS_PIXEL_SHADER" << std::endl;
 		return false;
 	}
-	device->Release();
+	//device->Release();
 	return true;
 }
 
@@ -226,7 +217,7 @@ void Graphics::setViewport(D3D11_VIEWPORT& viewport, UINT width, UINT height)
 	viewport.MaxDepth = 1;
 }
 
-bool Graphics::createConstantBuffer(ID3D11Device*& pDevice, ID3D11Buffer*& pConstantBuffer, constantBufferMatrixes matrixes)
+bool Graphics::createConstantBuffer(constantBufferMatrixes matrixes)
 {
 	//Information about D3D11_BUFFER_DESC https://docs.microsoft.com/en-us/windows/win32/api/d3d11/ns-d3d11-d3d11_buffer_desc
 	D3D11_BUFFER_DESC constantBufferDesc = {};
@@ -242,16 +233,16 @@ bool Graphics::createConstantBuffer(ID3D11Device*& pDevice, ID3D11Buffer*& pCons
 	constantSubresourceData.SysMemPitch = 0;
 	constantSubresourceData.SysMemSlicePitch = 0;
 
-	HRESULT hr = pDevice->CreateBuffer(&constantBufferDesc, &constantSubresourceData, std::addressof(pConstantBuffer));
+	HRESULT hr = this->pDevice->CreateBuffer(&constantBufferDesc, &constantSubresourceData, this->pConstantBuffer.GetAddressOf());
 	if (FAILED(hr))
 	{
 		std::cout << "Failed to create constant buffer" << std::endl;
 	}
-	pDevice->Release();
+	//pDevice->Release();
 	return !FAILED(hr);
 }
 
-bool Graphics::createPixelConstantBuffer(ID3D11Device*& pDevice, Light& light, ID3D11Buffer*& pPixelConstantBuffer) //Light buffer
+bool Graphics::createPixelConstantBuffer(Light& light) //Light buffer
 {
 	//Information about D3D11_BUFFER_DESC https://docs.microsoft.com/en-us/windows/win32/api/d3d11/ns-d3d11-d3d11_buffer_desc
 	D3D11_BUFFER_DESC constantBufferDesc = {};
@@ -266,12 +257,12 @@ bool Graphics::createPixelConstantBuffer(ID3D11Device*& pDevice, Light& light, I
 	constantSubresourceData.SysMemPitch = 0;
 	constantSubresourceData.SysMemSlicePitch = 0;
 
-	HRESULT hr = pDevice->CreateBuffer(&constantBufferDesc, &constantSubresourceData, std::addressof(pPixelConstantBuffer));
-	pDevice->Release();
+	HRESULT hr = this->pDevice->CreateBuffer(&constantBufferDesc, &constantSubresourceData, this->pPixelConstantBuffer.GetAddressOf());
+	//pDevice->Release();
 	return !FAILED(hr);
 }
 
-bool Graphics::createSamplerState(ID3D11Device*& device, ID3D11SamplerState*& sampler)
+bool Graphics::createSamplerState()
 {
 	//Information about D3D11_SAMPLER_DESC https://docs.microsoft.com/en-us/windows/win32/api/d3d11/ns-d3d11-d3d11_sampler_desc
 	D3D11_SAMPLER_DESC desc = {};
@@ -285,12 +276,12 @@ bool Graphics::createSamplerState(ID3D11Device*& device, ID3D11SamplerState*& sa
 	desc.MinLOD = 0;
 	desc.MaxLOD = D3D11_FLOAT32_MAX; // no upper limit on LOD
 
-	HRESULT hr = device->CreateSamplerState(&desc, &sampler);
-	device->Release();
+	HRESULT hr = this->pDevice->CreateSamplerState(&desc, &this->sampler);
+	//device->Release();
 	return !FAILED(hr);
 }
 
-bool Graphics::createInputLayout(ID3D11Device*& device, ID3D11InputLayout*& inputLayout, const std::string& vertexShaderByteCode)
+bool Graphics::createInputLayout()
 {
 	//I should get some sort of polygon count here
 
@@ -308,8 +299,8 @@ bool Graphics::createInputLayout(ID3D11Device*& device, ID3D11InputLayout*& inpu
 		{ "TANGENT",  0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0}
 	};
 	//HRESULT is a data type that basically handles common error codes
-	HRESULT hr = device->CreateInputLayout(inputDesc, ARRAYSIZE(inputDesc), vertexShaderByteCode.c_str(), vertexShaderByteCode.length(), &inputLayout);
-	device->Release();
+	HRESULT hr = this->pDevice->CreateInputLayout(inputDesc, ARRAYSIZE(inputDesc), this->vertexShaderByteCode.c_str(), this->vertexShaderByteCode.length(), &this->inputLayout);
+	//device->Release();
 	return !FAILED(hr);
 }
 
@@ -333,7 +324,7 @@ bool Graphics::loadShaderData(const std::string& filename, std::string& shaderBy
 	return true;
 }
 
-bool Graphics::createRasterizerStates(ID3D11Device*& device, ID3D11RasterizerState* rasStateNoCulling, ID3D11DeviceContext*& immediateContext)
+bool Graphics::createRasterizerStates()
 {
 	
 	D3D11_RASTERIZER_DESC rasStateDesc;
@@ -350,7 +341,7 @@ bool Graphics::createRasterizerStates(ID3D11Device*& device, ID3D11RasterizerSta
 	rasStateDesc.FillMode = D3D11_FILL_MODE::D3D11_FILL_SOLID;
 
 	rasStateDesc.CullMode = D3D11_CULL_MODE::D3D11_CULL_NONE;
-	HRESULT hr = device->CreateRasterizerState(&rasStateDesc, &rasStateNoCulling); //No culling state;
+	HRESULT hr = this->pDevice->CreateRasterizerState(&rasStateDesc, &this->rasStateNoCulling); //No culling state;
 
 	if (FAILED(hr))
 	{
@@ -359,12 +350,12 @@ bool Graphics::createRasterizerStates(ID3D11Device*& device, ID3D11RasterizerSta
 	}
 
 	//Set default state
-	immediateContext->RSSetState(rasStateNoCulling);
-	device->Release();
+	this->immediateContext->RSSetState(this->rasStateNoCulling.Get());
+	//device->Release();
 	return true;
 }
 
-bool Graphics::createPerFrameBuffer(ID3D11Device*& pDevice, ID3D11Buffer*& pPerFrameConstantBuffer, PerFrameMatrixes perFrameStruct)
+bool Graphics::createPerFrameBuffer(PerFrameMatrixes perFrameStruct)
 {
 	//Information about D3D11_BUFFER_DESC https://docs.microsoft.com/en-us/windows/win32/api/d3d11/ns-d3d11-d3d11_buffer_desc
 	D3D11_BUFFER_DESC constantBufferDesc = {};
@@ -379,7 +370,7 @@ bool Graphics::createPerFrameBuffer(ID3D11Device*& pDevice, ID3D11Buffer*& pPerF
 	constantSubresourceData.SysMemPitch = 0;
 	constantSubresourceData.SysMemSlicePitch = 0;
 
-	HRESULT hr = pDevice->CreateBuffer(&constantBufferDesc, &constantSubresourceData, std::addressof(pPerFrameConstantBuffer));
+	HRESULT hr = this->pDevice->CreateBuffer(&constantBufferDesc, &constantSubresourceData, this->pPerFrameConstantBuffer.GetAddressOf());
 	if (FAILED(hr))
 	{
 		std::cout << "Could not create PerFrameConstantBuffer" << std::endl;
