@@ -41,4 +41,7 @@ public:
 	void setShaderResourceView(ID3D11DeviceContext*& deviceContext, ID3D11ShaderResourceView* shadowResourceView);
 	void unbindShaderResourceView(ID3D11DeviceContext*& deviceContext);
 	void setLightPassRenderTarget(ID3D11RenderTargetView*& renderTargetView, ID3D11DeviceContext*& deviceContext);
+
+	//Temp
+	void shutDown();
 };

@@ -6,8 +6,8 @@ ParticleSystem::ParticleSystem()
 
 ParticleSystem::~ParticleSystem()
 {
-	this->vertexParticleConstantBuffer->Release();
-	this->vertexParticleConstantBuffer = 0;
+	//this->vertexParticleConstantBuffer->Release();
+	//this->vertexParticleConstantBuffer = 0;
 }
 
 void ParticleSystem::InitializeParticles(ID3D11Device*& device, Particle particleList[], DirectX::XMFLOAT4 position)
@@ -208,6 +208,12 @@ void ParticleSystem::LoadShaderData(const std::string& filename, std::string& sh
 	shaderData.assign((std::istreambuf_iterator<char>(reader)), std::istreambuf_iterator<char>());
 	shaderByteCode = shaderData;
 	reader.close();
+}
+
+void ParticleSystem::shutDown()
+{
+	this->vertexParticleConstantBuffer->Release();
+	this->vertexParticleConstantBuffer = 0;
 }
 
 

@@ -20,38 +20,38 @@ Deferred::Deferred()
 	textureHeight = 500;
 	textureWidth = 500;
 }
-
+//
 Deferred::~Deferred()
 {
-	normalData->Release();
-	positionData->Release();
-	diffuseData->Release();
+	//normalData->Release();
+	//positionData->Release();
+	//diffuseData->Release();
 
-	normalTargetView->Release();
-	positionTargetView->Release();
-	diffuseTargetView->Release();
+	//normalTargetView->Release();
+	//positionTargetView->Release();
+	//diffuseTargetView->Release();
 
-	normalResourceView->Release();
-	positionResourceView->Release();
-	diffuseResourceView->Release();
+	//normalResourceView->Release();
+	//positionResourceView->Release();
+	//diffuseResourceView->Release();
 
-	depthData->Release();
-	depthStencilView->Release();
+	//depthData->Release();
+	//depthStencilView->Release();
 
-	normalData = 0;
-	positionData = 0;
-	diffuseData = 0;
+	//normalData = 0;
+	//positionData = 0;
+	//diffuseData = 0;
 
-	normalTargetView = 0;
-	positionTargetView = 0;
-	diffuseTargetView = 0;
+	//normalTargetView = 0;
+	//positionTargetView = 0;
+	//diffuseTargetView = 0;
 
-	normalResourceView = 0;
-	positionResourceView = 0;
-	diffuseResourceView = 0;
+	//normalResourceView = 0;
+	//positionResourceView = 0;
+	//diffuseResourceView = 0;
 
-	depthData = 0;
-	depthStencilView = 0;
+	//depthData = 0;
+	//depthStencilView = 0;
 }
 
 bool Deferred::instalize(ID3D11Device*& device, int textureWidth, int textureHeight, float screenDepth, float screenNear)
@@ -210,11 +210,47 @@ void Deferred::unbindShaderResourceView(ID3D11DeviceContext*& deviceContext)
 {
 	ID3D11ShaderResourceView* const kill[4] = { nullptr };
 	deviceContext->PSSetShaderResources(0, 4, kill);
-	
+
+	for (int i = 0; i < 4; i++)
+	{
+		delete kill[i];
+	}
 }
 
 void Deferred::setLightPassRenderTarget(ID3D11RenderTargetView*& renderTargetView, ID3D11DeviceContext*& deviceContext)
 {
 	deviceContext->OMSetRenderTargets(1, &renderTargetView, depthStencilView);
-	
+}
+
+void Deferred::shutDown()
+{
+	normalData->Release();
+	positionData->Release();
+	diffuseData->Release();
+
+	normalTargetView->Release();
+	positionTargetView->Release();
+	diffuseTargetView->Release();
+
+	normalResourceView->Release();
+	positionResourceView->Release();
+	diffuseResourceView->Release();
+
+	depthData->Release();
+	depthStencilView->Release();
+
+	normalData = 0;
+	positionData = 0;
+	diffuseData = 0;
+
+	normalTargetView = 0;
+	positionTargetView = 0;
+	diffuseTargetView = 0;
+
+	normalResourceView = 0;
+	positionResourceView = 0;
+	diffuseResourceView = 0;
+
+	depthData = 0;
+	depthStencilView = 0;
 }

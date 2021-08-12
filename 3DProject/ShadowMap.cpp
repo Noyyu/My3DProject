@@ -64,6 +64,8 @@ void ShadowMap::SetProjectionMatrix(Light* light, ID3D11Buffer*& pShadowConstant
 
 
 
+
+
 bool ShadowMap::CreateShadowMap()
 {
 	D3D11_TEXTURE2D_DESC textureDesc;

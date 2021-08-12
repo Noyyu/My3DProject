@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <crtdbg.h>
 #define DBG_NEW new ( _NORMAL_BLOCK , __FILE__ , __LINE__ )
+#define _NEW new( _NORMAL_BLOCK, __FILE__, __LINE__)
 
 #include <Windows.h>
 #include "Window.h"
@@ -46,7 +47,7 @@ void geomatryPass(ID3D11DeviceContext*& immediateContext, D3D11_VIEWPORT& viewpo
 	deferred.setRenderTargets(immediateContext);
 
 	objObject.DrawObjModel(immediateContext, perFrameConstantBuffer, deferred, vertexShader, pixelShader, pPixelConstantBuffer, camera);
-	//objObject2.drawObjModel(immediateContext, perFrameConstantBuffer, deferred, vertexShader, pixelShader, pPixelConstantBuffer, camera);
+	//objObject2.DrawObjModel(immediateContext, perFrameConstantBuffer, deferred, vertexShader, pixelShader, pPixelConstantBuffer, camera);
 	WaterMesh.DrawObjModel(immediateContext, perFrameConstantBuffer, deferred, vertexShader, pixelShader, pPixelConstantBuffer, camera);
 	cubeMesh.DrawObjModel(immediateContext, perFrameConstantBuffer, deferred, vertexShader, pixelShader, pPixelConstantBuffer, camera);
 	eyeOne.DrawObjModel(immediateContext, perFrameConstantBuffer, deferred, vertexShader, pixelShader, pPixelConstantBuffer, camera);
@@ -128,45 +129,51 @@ int	CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 	//-----------------------------------------------------------------//
 
 	//All the tihngs needed
+	D3D11_VIEWPORT           viewPort;
 	ID3D11RasterizerState*   rasStateNoCulling   = nullptr; // Back face culling with geomatry shader
 	ID3D11Device*            pDevice             = nullptr;
 	IDXGISwapChain*          pSwapChain          = nullptr;
 	ID3D11DeviceContext*     immediateContext    = nullptr;
 	ID3D11RenderTargetView*  renderTargetView    = nullptr;
-	ID3D11VertexShader*      vertexShader        = nullptr;
-	ID3D11PixelShader*       pixelShader         = nullptr;
-	ID3D11GeometryShader*    geomatryShader      = nullptr;  // Back face culling
-	ID3D11VertexShader*      ShadowVertexShader  = nullptr;  // Shadow shader
-	
+
+	//Shaders
+	ID3D11VertexShader*      vertexShader          = nullptr; // Geomatry pass
+	ID3D11PixelShader*       pixelShader           = nullptr; // Geomatry pass
+	ID3D11VertexShader*      lightPassVertexShader = nullptr; // Light pass
+	ID3D11PixelShader*       lightPassPixelShader  = nullptr; // Light pass
+	ID3D11GeometryShader*    geomatryShader        = nullptr; // Back face culling
+	ID3D11VertexShader*      ShadowVertexShader    = nullptr; // Shadow shader
+
 	ID3D11InputLayout*       inputLayout         = nullptr;
 	ID3D11InputLayout*		 shadowInputLayout   = nullptr;
-	D3D11_VIEWPORT           viewPort;
+
+	//Byte codes
+	std::string              lightPassVertexShaderByteCode;
 	std::string              vertexShaderByteCode;
 	std::string              vertexShadowShaderByteCode;       // Shadow map
-	ID3D11Buffer*            pConstantBuffer          = nullptr; // Interface pointer
+
+	//Buffers
+	ID3D11Buffer*            pConstantBuffer          = nullptr; // Per Object
 	ID3D11Buffer*            pPixelConstantBuffer     = nullptr; // Light buffer
 	ID3D11Buffer*            fullScreenVertexBuffer   = nullptr; // Fullscreen quad
 	ID3D11Buffer*			 pShadowConstantBuffer    = nullptr; // Shadow map
-	ID3D11Buffer*            pPerFrameConstantBuffer  = nullptr;
-	ID3D11SamplerState*      sampler                  = nullptr; // Using the repeat thing
+	ID3D11Buffer*            pPerFrameConstantBuffer  = nullptr; // Per Frame
 
-	//Deferred things
-
-	ID3D11VertexShader*       lightPassVertexShader = nullptr;
-	ID3D11PixelShader*        lightPassPixelShader  = nullptr;
-
-	std::string               lightPassVertexShaderByteCode;
+	ID3D11SamplerState*      sampler                  = nullptr; // Using the repeat thing (Shadow has its own sampler for.. not repeat things)
 
 
+	//-----------------------------------------------------------------//
+	// Matrixes for buffers and stuff
+	//-----------------------------------------------------------------//
 
-	//matrixsstuff for the quad
-	constantBufferMatrixes matrixes;//used to send the world matrix and worldviewprojection matrixes to the shader later for 
-	DirectX::XMMATRIX WorldViewProjection = DirectX::XMMatrixIdentity();
-	DirectX::XMMATRIX World = DirectX::XMMatrixIdentity();
-	World = DirectX::XMMatrixTranslation(0.0f, 5.0f, 0.0f);
-	matrixes.hasNormal  = false;
-	matrixes.hasTexture = true;
-	MatrixFunctions matrixFunction;
+	//Per Object Matrix.
+	constantBufferMatrixes perObjectMatrixes;//used to send the world matrix and worldviewprojection matrixes to the shader later for 
+	perObjectMatrixes.WorldInverseTransposeMatrix = {};
+	perObjectMatrixes.WorldViewProjection = {};
+	perObjectMatrixes.World = {};
+	perObjectMatrixes.hasNormal = false;
+	perObjectMatrixes.hasTexture = false;
+	perObjectMatrixes.time = 0;
 
 	//per frame matrix stuff
 	PerFrameMatrixes perframeMatrixes;
@@ -209,7 +216,7 @@ int	CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 		sampler,
 		light,
 		pPixelConstantBuffer,
-		matrixes,
+		perObjectMatrixes,
 		fullScreenVertexBuffer,
 		lightPassVertexShader,
 		lightPassPixelShader,
@@ -254,7 +261,7 @@ int	CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 	// Load Models
 	//-----------------------------------------------------------------//
 	std::cout << " " << std::endl;
-	std::cout << "Models are loading, this might take a while depending on your hardwere" << std::endl;
+	std::cout << "Models are loading, this might take a while depending on your hardware" << std::endl;
 
 	//Mesh Objects
 	Mesh heightPlaneMesh; 
@@ -265,7 +272,7 @@ int	CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 	Mesh platformMesh;
 
 	//File Paths
-	std::wstring fileName = L"Objects/House.obj";
+	std::wstring fileName = L"Objects/NikkisHus.obj";
 	std::wstring fileName2 = L"Objects/HightPlane.obj";
 	std::wstring waterMeshPath = L"Objects/WaterMesh.obj";
 	std::wstring cubePath = L"Objects/Boll.obj";
@@ -284,7 +291,7 @@ int	CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 
 	//Load models
 	heightPlaneMesh.LoadObjModel(pDevice, fileName2, true);
-	//houseMesh.loadObjModel(pDevice, fileName, true);
+	//houseMesh.LoadObjModel(pDevice, fileName, true);
 	waterMesh.LoadObjModel(pDevice, waterMeshPath, true);
 	cubeMesh.LoadObjModel(pDevice, cubePath, true);
 	eyeBall1.LoadObjModel(pDevice, eyeOneFile, true);
@@ -299,6 +306,8 @@ int	CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 
 	std::cout << "Models loaded" << std::endl;
 
+	//-----------------------------------------------------------------//
+	// Other stuff needed
 	//-----------------------------------------------------------------//
 
 	//Message pump
@@ -412,7 +421,7 @@ int	CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 				fullScreenVertexBuffer,
 				pConstantBuffer,
 				pPixelConstantBuffer,
-				matrixes,
+				perObjectMatrixes,
 				deffered,
 				light,
 				shadowMap,
@@ -425,6 +434,8 @@ int	CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 
 			particles.particlePass(immediateContext, walkingCamera);
 
+			immediateContext->ClearState();
+			immediateContext->Flush();
 			//Shows the front buffer
 			pSwapChain->Present(1, 0);
 
@@ -440,65 +451,78 @@ int	CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 
 	ID3D11Debug* pDebug = nullptr;
 	pDevice->QueryInterface(IID_PPV_ARGS(&pDebug));
+	immediateContext->ClearState();
+	immediateContext->Flush();
 
 	//Get rid of some of them memoryleaks
+	//pDevice->Release();
+	//pDevice->Release();
+	//pDevice = 0;
 
-	rasStateNoCulling->Release();
-	pSwapChain->Release();
-	immediateContext->Release();
-	renderTargetView->Release();
-	vertexShader->Release();
-	pixelShader->Release();
-	geomatryShader->Release();
-	ShadowVertexShader->Release();
+	//heightPlaneMesh.ShutDown();
+	//houseMesh.ShutDown();
+	//waterMesh.ShutDown();
+	//cubeMesh.ShutDown();
+	//eyeBall1.ShutDown();
+	//platformMesh.ShutDown();
 
-	inputLayout->Release();
-	shadowInputLayout->Release();
+	//deffered.shutDown();
 
-	pConstantBuffer->Release();
-	pPixelConstantBuffer->Release();
-	fullScreenVertexBuffer->Release();
-	pShadowConstantBuffer->Release();
-	pPerFrameConstantBuffer->Release();
+	////rasStateNoCulling->Release();
+	//pSwapChain->Release();
+	//renderTargetView->Release();
+	//vertexShader->Release();
+	//pixelShader->Release();
+	//geomatryShader->Release();
+	//ShadowVertexShader->Release();
+
+	//inputLayout->Release();
+	//shadowInputLayout->Release();
+
+	//pConstantBuffer->Release();
+	//pPixelConstantBuffer->Release();
+	//fullScreenVertexBuffer->Release();
+	//pShadowConstantBuffer->Release();
+	//pPerFrameConstantBuffer->Release();
 	//sampler->Release();
 
-	lightPassVertexShader->Release();
-	lightPassPixelShader->Release();
+	//lightPassVertexShader->Release();
+	//lightPassPixelShader->Release();
 
-	//----
+	////----
 
-	rasStateNoCulling = 0;
-	
-	pSwapChain = 0;
-	immediateContext = 0;
-	renderTargetView = 0;
-	vertexShader = 0;
-	pixelShader = 0;
-	geomatryShader = 0;
-	ShadowVertexShader = 0;
+	////rasStateNoCulling = 0;
+	//
+	//pSwapChain = 0;
+	////immediateContext = 0;
+	//renderTargetView = 0;
+	//vertexShader = 0;
+	//pixelShader = 0;
+	//geomatryShader = 0;
+	//ShadowVertexShader = 0;
 
-	inputLayout = 0;
-	shadowInputLayout = 0;
+	//inputLayout = 0;
+	//shadowInputLayout = 0;
 
-	pConstantBuffer = 0;
-	pPixelConstantBuffer = 0;
-	fullScreenVertexBuffer = 0;
-	pShadowConstantBuffer = 0;
-	pPerFrameConstantBuffer = 0;
+	//pConstantBuffer = 0;
+	//pPixelConstantBuffer = 0;
+	//fullScreenVertexBuffer = 0;
+	//pShadowConstantBuffer = 0;
+	//pPerFrameConstantBuffer = 0;
 	//sampler = 0;
 
-	lightPassVertexShader = 0;
-	lightPassPixelShader = 0;
+	//lightPassVertexShader = 0;
+	//lightPassPixelShader = 0;
 
-	delete walkingCamera;
+	//delete walkingCamera;
+	//immediateContext->ClearState();
+	//immediateContext->Flush();
+	//immediateContext = nullptr;
 
-	pDevice->Release();
-	pDevice = 0;
+	//pDebug->ReportLiveDeviceObjects(D3D11_RLDO_DETAIL);
 
-	pDebug->ReportLiveDeviceObjects(D3D11_RLDO_DETAIL);
-
-	pDebug->Release();
-	pDebug = 0;
+	//pDebug->Release();
+	//pDebug = 0;
 
 
 	if (gResult == -1)

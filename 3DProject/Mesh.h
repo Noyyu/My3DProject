@@ -51,4 +51,7 @@ public:
 	void Animation(bool animation);
 	void FollowMe(bool follow);
 
+	//temp 
+	void ShutDown();
+
 };

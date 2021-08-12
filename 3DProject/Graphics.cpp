@@ -9,7 +9,7 @@ Graphics::Graphics(UINT width, UINT height, HWND windowHandle, ID3D11Device*& pD
 	ID3D11PixelShader*& pixelShader, std::string& vertexShaderByteCode, ID3D11InputLayout*& inputLayout,ID3D11Buffer*& pConstantBuffer,
 	ID3D11SamplerState*& sampler, Light& light, ID3D11Buffer*& pPixelConstantBuffer, constantBufferMatrixes matrixes, ID3D11Buffer*& FullScreenVertexBuffer,
 	ID3D11VertexShader*& finalPassVertexShader, ID3D11PixelShader*& finalPassPixelShader,std::string& lightPassVertexShaderByteCode, 
-	ID3D11RasterizerState*& rasStateNoCulling, ID3D11GeometryShader*& geomatryShader, 
+	ID3D11RasterizerState* rasStateNoCulling, ID3D11GeometryShader*& geomatryShader, 
 	ID3D11Buffer*& pPerFrameConstantBuffer, PerFrameMatrixes perFrameStruct)
 {
 	//... SETING UP D3D11 THINGS ...//
@@ -54,7 +54,6 @@ Graphics::Graphics(UINT width, UINT height, HWND windowHandle, ID3D11Device*& pD
 
 	//.. Create Per Frame Constant Buffer //
 	createPerFrameBuffer(pDevice, pPerFrameConstantBuffer, perFrameStruct);
-	
 }
 
 Graphics::~Graphics()
@@ -97,6 +96,7 @@ bool Graphics::createInterface(UINT width, UINT height, HWND windowHandle, IDXGI
 		nullptr,
 		&immediateContext
 	);
+
 	pDevice->Release();
 	return !(FAILED(hr));
 	
@@ -333,7 +333,7 @@ bool Graphics::loadShaderData(const std::string& filename, std::string& shaderBy
 	return true;
 }
 
-bool Graphics::createRasterizerStates(ID3D11Device*& device, ID3D11RasterizerState*& rasStateNoCulling, ID3D11DeviceContext*& immediateContext)
+bool Graphics::createRasterizerStates(ID3D11Device*& device, ID3D11RasterizerState* rasStateNoCulling, ID3D11DeviceContext*& immediateContext)
 {
 	
 	D3D11_RASTERIZER_DESC rasStateDesc;

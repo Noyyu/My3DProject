@@ -1250,6 +1250,14 @@ void Mesh::DrawShadow(ID3D11DeviceContext*& immediateContext, Camera* camera, ID
 }
 
 
+void Mesh::ShutDown()
+{
+    //this->meshIndexBuffer->Release();
+    //this->meshVertexBuffer->Release();
+    meshShaderResourceView.clear();
+    meshShaderResourceView.~vector();
+}
+
 void Mesh::Animation(bool animation)
 {
     this->animation = animation;
