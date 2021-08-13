@@ -80,7 +80,7 @@ bool Graphics::createInterface(UINT width, UINT height, HWND windowHandle)
 		nullptr, // Choose the default adapter 
 		D3D_DRIVER_TYPE_HARDWARE,// We want a hardwere device
 		nullptr, // Handle to the binary for the driver we want to load (which i dont want)
-		/*D3D11_CREATE_DEVICE_SINGLETHREADED |*/ D3D11_CREATE_DEVICE_DEBUG, // makes the device single threaded which can inprove performence
+		D3D11_CREATE_DEVICE_DEBUG, // makes the device single threaded which can inprove performence
 		nullptr, // Feature level
 		0,
 		D3D11_SDK_VERSION,// Use the sdk verion you got on your system
@@ -139,7 +139,6 @@ bool Graphics::fullScreenQuadVertexBuffer()
 	D3D11_SUBRESOURCE_DATA subresourceData = { 0 };
 	subresourceData.pSysMem = quad;
 	HRESULT hr = this->pDevice->CreateBuffer(&bufferDesc, &subresourceData, this->fullScreenVertexBuffer.GetAddressOf());
-	//pDevice->Release();
 	return !FAILED(hr);
 }
 
@@ -201,7 +200,6 @@ bool Graphics::loadLightPassShaders()
 		std::cout << "ERROR::loadLightPassShaders:: Could not create LIGHT_PASS_PIXEL_SHADER" << std::endl;
 		return false;
 	}
-	//device->Release();
 	return true;
 }
 
@@ -238,7 +236,6 @@ bool Graphics::createConstantBuffer(constantBufferMatrixes matrixes)
 	{
 		std::cout << "Failed to create constant buffer" << std::endl;
 	}
-	//pDevice->Release();
 	return !FAILED(hr);
 }
 
@@ -258,7 +255,6 @@ bool Graphics::createPixelConstantBuffer(Light& light) //Light buffer
 	constantSubresourceData.SysMemSlicePitch = 0;
 
 	HRESULT hr = this->pDevice->CreateBuffer(&constantBufferDesc, &constantSubresourceData, this->pPixelConstantBuffer.GetAddressOf());
-	//pDevice->Release();
 	return !FAILED(hr);
 }
 
@@ -277,7 +273,6 @@ bool Graphics::createSamplerState()
 	desc.MaxLOD = D3D11_FLOAT32_MAX; // no upper limit on LOD
 
 	HRESULT hr = this->pDevice->CreateSamplerState(&desc, &this->sampler);
-	//device->Release();
 	return !FAILED(hr);
 }
 
@@ -300,7 +295,6 @@ bool Graphics::createInputLayout()
 	};
 	//HRESULT is a data type that basically handles common error codes
 	HRESULT hr = this->pDevice->CreateInputLayout(inputDesc, ARRAYSIZE(inputDesc), this->vertexShaderByteCode.c_str(), this->vertexShaderByteCode.length(), &this->inputLayout);
-	//device->Release();
 	return !FAILED(hr);
 }
 
@@ -351,7 +345,6 @@ bool Graphics::createRasterizerStates()
 
 	//Set default state
 	this->immediateContext->RSSetState(this->rasStateNoCulling.Get());
-	//device->Release();
 	return true;
 }
 
@@ -375,7 +368,6 @@ bool Graphics::createPerFrameBuffer(PerFrameMatrixes perFrameStruct)
 	{
 		std::cout << "Could not create PerFrameConstantBuffer" << std::endl;
 	}
-	//pDevice->Release();
 	return !FAILED(hr);
 }
 

@@ -22,7 +22,7 @@ struct GSOutput
 
 [maxvertexcount(3)]
 void main(
-	triangle float4 position[3]           : SV_POSITION, //This wont work with float3
+	triangle float4 position[3]           : SV_POSITION,
 	triangle float3 color[3]              : COLOR,
 	triangle float2 textureCoordinates[3] : TEXCOORD,
 	triangle float4 normal[3]             : NORMAL,
@@ -35,8 +35,8 @@ void main(
     float3x3 vertices =
     {
         float3(position[0].xyz),
-		float3(position[1].xyz),
-		float3(position[2].xyz)
+		float3(position[1].xyz), // Replace with 2 for counter-clockwise
+		float3(position[2].xyz)  // Replace with 1 for counter-clockwise
     };
 	
     float d = determinant(vertices);

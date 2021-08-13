@@ -1,8 +1,3 @@
-#define _CRTDBG_MAP_ALLOC
-#include <stdlib.h>
-#include <crtdbg.h>
-#define DBG_NEW new ( _NORMAL_BLOCK , __FILE__ , __LINE__ )
-#define _NEW new( _NORMAL_BLOCK, __FILE__, __LINE__)
 
 #include <Windows.h>
 #include "Window.h"
@@ -47,7 +42,7 @@ void geomatryPass(ID3D11DeviceContext* immediateContext, D3D11_VIEWPORT& viewpor
 	deferred.setRenderTargets(immediateContext);
 
 	objObject.DrawObjModel(immediateContext, perFrameConstantBuffer, vertexShader, pixelShader, pPixelConstantBuffer, camera);
-	//objObject2.DrawObjModel(immediateContext, perFrameConstantBuffer, deferred, vertexShader, pixelShader, pPixelConstantBuffer, camera);
+	objObject2.DrawObjModel(immediateContext, perFrameConstantBuffer, vertexShader, pixelShader, pPixelConstantBuffer, camera);
 	WaterMesh.DrawObjModel(immediateContext, perFrameConstantBuffer, vertexShader, pixelShader, pPixelConstantBuffer, camera);
 	cubeMesh.DrawObjModel(immediateContext, perFrameConstantBuffer, vertexShader, pixelShader, pPixelConstantBuffer, camera);
 	eyeOne.DrawObjModel(immediateContext, perFrameConstantBuffer, vertexShader, pixelShader, pPixelConstantBuffer, camera);
@@ -218,7 +213,7 @@ int	CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 	Mesh platformMesh;
 
 	//File Paths
-	std::wstring fileName = L"Objects/NikkisHus.obj";
+	std::wstring fileName = L"Objects/House.obj";
 	std::wstring fileName2 = L"Objects/HightPlane.obj";
 	std::wstring waterMeshPath = L"Objects/WaterMesh.obj";
 	std::wstring cubePath = L"Objects/Boll.obj";
@@ -237,7 +232,7 @@ int	CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 
 	//Load models
 	heightPlaneMesh.LoadObjModel(setUpTheGraphics.pDevice.Get(), fileName2, true);
-	//houseMesh.LoadObjModel(setUpTheGraphics.pDevice.Get(), fileName, true);
+	houseMesh.LoadObjModel(setUpTheGraphics.pDevice.Get(), fileName, true);
 	waterMesh.LoadObjModel(setUpTheGraphics.pDevice.Get(), waterMeshPath, true);
 	cubeMesh.LoadObjModel(setUpTheGraphics.pDevice.Get(), cubePath, true);
 	eyeBall1.LoadObjModel(setUpTheGraphics.pDevice.Get(), eyeOneFile, true);
@@ -351,7 +346,7 @@ int	CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 
 			//Stuff that happenes in the Mesh class.
 			cubeMesh.DrawShadow(setUpTheGraphics.immediateContext.Get(), walkingCamera, setUpTheGraphics.pPerFrameConstantBuffer.Get());
-			//houseMesh.DrawShadow(immediateContext, walkingCamera, pPerFrameConstantBuffer);
+			houseMesh.DrawShadow(setUpTheGraphics.immediateContext.Get(), walkingCamera, setUpTheGraphics.pPerFrameConstantBuffer.Get());
 			eyeBall1.DrawShadow(setUpTheGraphics.immediateContext.Get(), walkingCamera, setUpTheGraphics.pPerFrameConstantBuffer.Get());
 			platformMesh.DrawShadow(setUpTheGraphics.immediateContext.Get(), walkingCamera, setUpTheGraphics.pPerFrameConstantBuffer.Get());
 
@@ -379,8 +374,6 @@ int	CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 
 			particles.particlePass(setUpTheGraphics.immediateContext.Get(), walkingCamera);
 
-			//immediateContext->ClearState();
-			//immediateContext->Flush();
 			//Shows the front buffer
 			setUpTheGraphics.pSwapChain.Get()->Present(1, 0);
 
@@ -394,80 +387,7 @@ int	CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 	// Shut down
 	//-----------------------------------------------------------------//
 
-	ID3D11Debug* pDebug = nullptr;
-	setUpTheGraphics.pDevice.Get()->QueryInterface(IID_PPV_ARGS(&pDebug));
-	//immediateContext->ClearState();
-	//immediateContext->Flush();
-
-	//Get rid of some of them memoryleaks
-	//pDevice->Release();
-	//pDevice->Release();
-	//pDevice = 0;
-
-	heightPlaneMesh.ShutDown();
-	houseMesh.ShutDown();
-	waterMesh.ShutDown();
-	cubeMesh.ShutDown();
-	eyeBall1.ShutDown();
-	platformMesh.ShutDown();
-
-	deffered.shutDown();
-
-	////rasStateNoCulling->Release();
-	//pSwapChain->Release();
-	//renderTargetView->Release();
-	//vertexShader->Release();
-	//pixelShader->Release();
-	//geomatryShader->Release();
-	//ShadowVertexShader->Release();
-
-	//inputLayout->Release();
-	//shadowInputLayout->Release();
-
-	//pConstantBuffer->Release();
-	//pPixelConstantBuffer->Release();
-	//fullScreenVertexBuffer->Release();
-	//pShadowConstantBuffer->Release();
-	//pPerFrameConstantBuffer->Release();
-	//sampler->Release();
-
-	//lightPassVertexShader->Release();
-	//lightPassPixelShader->Release();
-
-	////----
-
-	////rasStateNoCulling = 0;
-	//
-	//pSwapChain = 0;
-	////immediateContext = 0;
-	//renderTargetView = 0;
-	//vertexShader = 0;
-	//pixelShader = 0;
-	//geomatryShader = 0;
-	//ShadowVertexShader = 0;
-
-	//inputLayout = 0;
-	//shadowInputLayout = 0;
-
-	//pConstantBuffer = 0;
-	//pPixelConstantBuffer = 0;
-	//fullScreenVertexBuffer = 0;
-	//pShadowConstantBuffer = 0;
-	//pPerFrameConstantBuffer = 0;
-	//sampler = 0;
-
-	//lightPassVertexShader = 0;
-	//lightPassPixelShader = 0;
-
 	delete walkingCamera;
-	//immediateContext->ClearState();
-	//immediateContext->Flush();
-	//immediateContext = nullptr;
-
-	pDebug->ReportLiveDeviceObjects(D3D11_RLDO_DETAIL);
-
-	pDebug->Release();
-	pDebug = 0;
 
 
 	if (gResult == -1)

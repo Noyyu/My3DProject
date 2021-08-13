@@ -29,7 +29,17 @@ Mesh::Mesh()
     std::vector<ID3D11ShaderResourceView*> meshShaderResourceView = {};
     std::vector<std::wstring> textureNameArray = {}; //https://www.cplusplus.com/reference/string/wstring/
 }
-
+Mesh::~Mesh()
+{
+    if (this->meshIndexBuffer != nullptr)
+    {
+        this->meshIndexBuffer->Release();
+    }
+    if (this->meshVertexBuffer != nullptr)
+    {
+        this->meshVertexBuffer->Release();
+    }
+}
 
 void Mesh::SetFilePath(std::wstring filePath)
 {
@@ -994,7 +1004,7 @@ bool Mesh::LoadObjModel(ID3D11Device* device, std::wstring fileName, bool comput
         for (int i = 0; i < meshTriangles; ++i)
         {
             //Get the vector describing one edge of our triangle (edge 0,2)
-            vecX = vertices[indices[(i * 3)]].pos.x - vertices[indices[(i * 3) + 2]].pos.x; //indices används inte just nu så därför funkar det inte. 
+            vecX = vertices[indices[(i * 3)]].pos.x - vertices[indices[(i * 3) + 2]].pos.x; 
             vecY = vertices[indices[(i * 3)]].pos.y - vertices[indices[(i * 3) + 2]].pos.y;
             vecZ = vertices[indices[(i * 3)]].pos.z - vertices[indices[(i * 3) + 2]].pos.z;
             edge1 = DirectX::XMVectorSet(vecX, vecY, vecZ, 0.0f);    //Create our first edge
@@ -1243,14 +1253,9 @@ void Mesh::DrawShadow(ID3D11DeviceContext* immediateContext, Camera* camera, ID3
         immediateContext->VSSetConstantBuffers(1, 1, &pConstantBuffer);
 
         immediateContext->DrawIndexedInstanced(indices.size(), 1, 0, 0, 0);
-        
     }
 }
 
-
-void Mesh::ShutDown()
-{
-}
 
 void Mesh::Animation(bool animation)
 {

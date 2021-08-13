@@ -38,7 +38,7 @@ private:
 public:
 
 	Mesh();
-	virtual ~Mesh() = default;
+	~Mesh();
 
 	void SetFilePath(std::wstring filePath);
 	bool LoadObjModel(ID3D11Device* device, std::wstring fileName, bool computeNormals);
@@ -49,8 +49,5 @@ public:
 	//Create a draw shadow function here maybe. 
 	void Animation(bool animation);
 	void FollowMe(bool follow);
-
-	//temp 
-	void ShutDown();
 
 };

@@ -21,7 +21,6 @@ private:
 	ComPtr <ID3D11ShaderResourceView> positionResourceView;
 	ComPtr <ID3D11ShaderResourceView> diffuseResourceView;
 
-	//temp depth things:
 	ComPtr <ID3D11Texture2D> depthData;
 	ComPtr <ID3D11DepthStencilView> depthStencilView;
 
@@ -42,7 +41,4 @@ public:
 	void setShaderResourceView(ID3D11DeviceContext* deviceContext, ID3D11ShaderResourceView* shadowResourceView);
 	void unbindShaderResourceView(ID3D11DeviceContext* deviceContext);
 	void setLightPassRenderTarget(ID3D11RenderTargetView* renderTargetView, ID3D11DeviceContext* deviceContext);
-
-	//Temp
-	void shutDown();
 };
