@@ -33,7 +33,6 @@ private:
 	ID3D11Buffer* meshIndexBuffer;  //Becomes null somehow
 
 	std::vector<SurfaceMaterial> material;
-	std::vector<ComPtr<ID3D11ShaderResourceView>> meshShaderResourceView; //Needs to be released
 	std::vector<std::wstring> textureNameArray; //https://www.cplusplus.com/reference/string/wstring/
 
 public:

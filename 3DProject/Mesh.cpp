@@ -727,9 +727,10 @@ bool Mesh::LoadObjModel(ID3D11Device* device, std::wstring fileName, bool comput
                                     if (SUCCEEDED(hr))
                                     {
                                         textureNameArray.push_back(fileNamePath.c_str());
-                                        material[materialCount - 1].textureArrayIndex = meshShaderResourceView.size();
-                                        meshShaderResourceView.push_back(mtlShaderResourceView.Get());
+                                        //material[materialCount - 1].textureArrayIndex = meshShaderResourceView.size();
+                                        //meshShaderResourceView.push_back(mtlShaderResourceView.Get());
                                         material[materialCount - 1].hasTexture = true;
+                                        
                                     }
                                     if (FAILED(hr)) { return false; };
 
@@ -856,8 +857,8 @@ bool Mesh::LoadObjModel(ID3D11Device* device, std::wstring fileName, bool comput
                             if (SUCCEEDED(hr)) //TODO Idono if this works. 
                             {
                                 textureNameArray.push_back(fileNamePath.c_str());
-                                material[materialCount - 1].textureArrayIndex = meshShaderResourceView.size();
-                                meshShaderResourceView.push_back(mtlNormalShaderResourceView.Get());
+                                //material[materialCount - 1].textureArrayIndex = meshShaderResourceView.size();
+                                //meshShaderResourceView.push_back(mtlNormalShaderResourceView.Get());
                                 material[materialCount - 1].hasNormalMap = true;
                                 this->hasNormalMap = true;
                             }
@@ -1186,13 +1187,13 @@ void Mesh::DrawObjModel(ID3D11DeviceContext* immediateContext, ID3D11Buffer* pCo
         //Skickar vidare textureen till den första slotten om den finns. 
         if (material[i].hasTexture == true)
         {
-            immediateContext->PSSetShaderResources(0, 1, &meshShaderResourceView[0]);
+            immediateContext->PSSetShaderResources(0, 1, this->mtlShaderResourceView.GetAddressOf());
         }
         
         //Skicka in nomral map på den andra slotten om den finns. 
         if (material[i].hasNormalMap == true)
         {
-            immediateContext->PSSetShaderResources(1, 1, &meshShaderResourceView[1]);
+            immediateContext->PSSetShaderResources(1, 1, this->mtlNormalShaderResourceView.GetAddressOf());
         }
 
         this->time += 1;
@@ -1249,8 +1250,6 @@ void Mesh::DrawShadow(ID3D11DeviceContext* immediateContext, Camera* camera, ID3
 
 void Mesh::ShutDown()
 {
-    meshShaderResourceView.clear();
-    meshShaderResourceView.~vector();
 }
 
 void Mesh::Animation(bool animation)
