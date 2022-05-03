@@ -38,6 +38,7 @@ void geomatryPass(ID3D11DeviceContext* immediateContext, D3D11_VIEWPORT& viewpor
 	immediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 	immediateContext->GSSetShader(geomatryShader, nullptr, 0);
+	//immediateContext->GSSetShader(nullptr, nullptr, 0); //To demonstrate back face culling
 
 	deferred.setRenderTargets(immediateContext);
 
@@ -65,7 +66,7 @@ void lightPass(ID3D11DeviceContext* immediateContext, ID3D11RenderTargetView* re
 	immediateContext->IASetInputLayout(inputLayout);
 	immediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-	deferred.setLightPassRenderTarget(renderTargetView, immediateContext); //geting the back buffer to putt the stuff in it
+	deferred.setLightPassRenderTarget(renderTargetView, immediateContext); //geting the back buffer to putt the stuff in it (Renders teh finished result of the textures into this render target view)
 	deferred.setShaderResourceView(immediateContext, shadowObject.depthMap.shaderResourceView.Get());
 
 	immediateContext->VSSetShader(lightPassVertexShader, nullptr, 0);

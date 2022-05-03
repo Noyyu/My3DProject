@@ -79,7 +79,7 @@ bool Mesh::LoadObjModel(ID3D11Device* device, std::wstring fileName, bool comput
     wchar_t checkChar = {}; //stores one char from file at a time.  wchar_t https://docs.microsoft.com/en-us/cpp/cpp/char-wchar-t-char16-t-char32-t?view=msvc-160
     std::wstring face = {}; //holds the string containing the face vertices.
     int vertexIndex = 0; //Used to keep track of vertex index when for example knowing what vertex a new subset start or when a new face start. 
-    int triangleCount = 0; // total triangles
+    int triangleCount = 0; // total triangles per face (this will always be 1 i the mesh is already triangulated)
     totalVertices = 0; 
     int meshTriangles = 0;
     DirectX::XMFLOAT3 faces;
@@ -136,9 +136,9 @@ bool Mesh::LoadObjModel(ID3D11Device* device, std::wstring fileName, bool comput
             if (checkChar == ' ') // checks if there's a space after the v to see if its a vertex
             {
                 float vx = {}, vy = {}, vz = {};
-                fileIn >> vx >> vy >> vz; //Stores the vertices in the float variables
+                fileIn >> vx >> vy >> vz; //Stores the vertices in the float variables (this works since it stops at every whitespace)
 
-                //3: Checks if the model uses a right hand coordinatiopn system, if so we invert the z value. 
+                //3: Checks if the model uses a right hand coordinatiopn system, if so we invert the z value. (i dont check this anymore)
                 vertexPosition.push_back(DirectX::XMFLOAT3(vx, vy, vz));
             }
             ///----- Vertex texture coordinate -----///
@@ -182,7 +182,7 @@ bool Mesh::LoadObjModel(ID3D11Device* device, std::wstring fileName, bool comput
 
         case 'f': // 7, get faces
             checkChar = fileIn.get();
-            //Get the whole line untill the theres a space. 
+            //Get the whole line untill the theres a space. ( 5/1/1 , for example)
             if (checkChar == ' ') //Checks for spaces to see when the next vertex starts. 
             {
                 face = L""; //L means "wchar_t" 
@@ -192,12 +192,12 @@ bool Mesh::LoadObjModel(ID3D11Device* device, std::wstring fileName, bool comput
                 checkChar = fileIn.get();
                 while (checkChar != '\n') //As long as the line has not ended
                 {
-                    face += checkChar;//add a char to the face wchar_t
+                    face += checkChar; //add a char to the face wchar_t
 
                     checkChar = fileIn.get();
                     if (checkChar == ' ') //if theres a space...
                     {
-                        triangleCount++; //theres a triangle and we add it to the triangle count
+                        triangleCount++; //theres a triangle and we add it to the triangle count (how many triangles there are per face)
                     }
                 }
                 //At the end of this ^ we should have a char filled with the definition of one face.
@@ -208,17 +208,18 @@ bool Mesh::LoadObjModel(ID3D11Device* device, std::wstring fileName, bool comput
                     triangleCount--;
                 }
 
-                triangleCount -= 1; //Ever vertex in the face AFTER the first two are new faces
+                triangleCount -= 1; //Every vertex in the face AFTER the first two are new faces (calculates how many triangles there are per face)
 
                 std::wstringstream stringStream(face); //Stores the face data (vertex position, vertex texture coordinate , vertex normal) into the stringStream
 
+                //Defines what the numbers in the face string means. 
                 if (face.length() > 0)
                 {
                     int firstVertexIndex = {}, lastVertexIndex = {};//Holds the first and last vertex indexes. these are used for triangulating the thing later. 
 
                     for (int i = 0; i < 3; ++i) //this loop will exit when the first three vertices in the face have been turned into a tringale and stored in the index list. 
                     {
-                        stringStream >> vertexDefinition; //Send the face data to the vertexDefinition
+                        stringStream >> vertexDefinition; //>> operators always stops at white space, therefore it only takes the first part of the face the first loop and the secodn part of the face the second loop and so on)
 
                         std::wstring vertexPart = {};
                         int whichPart = 0; // checks if its vertex pos, vertex tc or vertex normal, this one gets added on after every itteration. 
@@ -241,9 +242,9 @@ bool Mesh::LoadObjModel(ID3D11Device* device, std::wstring fileName, bool comput
 
                                 ///---------- Vertex Position ----------///
                                 
-                                if (whichPart == 0) //if we're at vertex position
+                                if (whichPart == 0) //if we're at vertex position (x/y/y)
                                 {
-                                    wstringToInt >> vertexPositionIndexTemp; //This one becomes 1,2,3
+                                    wstringToInt >> vertexPositionIndexTemp;
                                     vertexPositionIndexTemp -= 1; //subtract one since c++ arrays start with 0, and obj start with 1
 
                                     //check to see if the vertex position was only thing specified
@@ -253,10 +254,10 @@ bool Mesh::LoadObjModel(ID3D11Device* device, std::wstring fileName, bool comput
                                         vertexTextureCoordinatesIndexTemp = 0;
                                     }
                                 }
-
+                                
                                 ///---------- Vertex Texture Coordinate ----------///
 
-                                else if (whichPart == 1) //if we're at vertex tecture coordinates pos
+                                else if (whichPart == 1) //if we're at vertex texture coordinates pos (y,x,y)
                                 {
                                     if (vertexPart != L"")
                                     {
@@ -276,7 +277,7 @@ bool Mesh::LoadObjModel(ID3D11Device* device, std::wstring fileName, bool comput
 
                                 ///---------- Vertex Normal ----------///
 
-                                else if (whichPart == 2) //if we're at the vertex normal position
+                                else if (whichPart == 2) //if we're at the vertex normal position (y,y,x)
                                 {
                                     std::wistringstream wstringToInt(vertexPart);
 
@@ -299,7 +300,7 @@ bool Mesh::LoadObjModel(ID3D11Device* device, std::wstring fileName, bool comput
                         }
 
                         //Avoid dublicate verts (For index buffer stuff)
-                        //........THIS PART NEVER WORKS.......//
+                        //........THIS PART NEVER WORKS.......// It works now cuz i was stupid and used draw instead of drawIndices 
                         if (totalVertices >= 3)
                         {
                             for (int iCheck = 0; iCheck < totalVertices; iCheck++)
@@ -330,12 +331,12 @@ bool Mesh::LoadObjModel(ID3D11Device* device, std::wstring fileName, bool comput
                             indices.push_back(totalVertices - 1); //Set index for this vertex. 
                         }
 
-                        //If this is the very first vertex in the face, i need to make sure the rest of the tirangles use use this vertex
+                        //If this is the very first vertex in the face, i need to make sure the rest of the tirangles use this vertex
                         if (i == 0)
                         {
                             firstVertexIndex = indices[vertexIndex]; //The first vertex index of this -face-. 
                         }
-                        //if this was the last vertex in the first triangle, i'll make sure the next trianglr uses this one (eg. tri1(1,2,3) tri2(1,3,4) tri3(1,4,5))
+                        //if this was the last vertex in the first triangle, i'll make sure the next triangle uses this one (eg. tri1(1,2,3) tri2(1,3,4) tri3(1,4,5))
                         if (i == 2)
                         {
                             lastVertexIndex = indices[vertexIndex]; //The last vertex index of the -triangle-.
@@ -348,9 +349,9 @@ bool Mesh::LoadObjModel(ID3D11Device* device, std::wstring fileName, bool comput
                     //If the model were to not be triangulated already, do it here. But i dont want to just keep fucking teack of your meshes. 
                     //Do it anyway.
 
-                    //If there ar more then 3 verts in a face, thats not a triangle. Lets convert it to a triangle. 
+                    //If there are more then 3 verts in a face, thats not a triangle. Lets convert it to a triangle. 
 
-                    for (int l = 0; l < triangleCount-1; l++)
+                    for (int l = 0; l < triangleCount-1; l++) //this is 0 if the mesh is already triangulated. 
                     {
                         indices.push_back(firstVertexIndex);
                         vertexIndex++;
@@ -446,7 +447,7 @@ bool Mesh::LoadObjModel(ID3D11Device* device, std::wstring fileName, bool comput
                     }
                 }
             }
-            //I could add triangulation here but ima skip that for now
+
             break;
 
         case 'm': // 8, mtllib
@@ -737,8 +738,6 @@ bool Mesh::LoadObjModel(ID3D11Device* device, std::wstring fileName, bool comput
                                     if (SUCCEEDED(hr))
                                     {
                                         textureNameArray.push_back(fileNamePath.c_str());
-                                        //material[materialCount - 1].textureArrayIndex = meshShaderResourceView.size();
-                                        //meshShaderResourceView.push_back(mtlShaderResourceView.Get());
                                         material[materialCount - 1].hasTexture = true;
                                         
                                     }
@@ -1036,7 +1035,7 @@ bool Mesh::LoadObjModel(ID3D11Device* device, std::wstring fileName, bool comput
             tempTangent.push_back(tangent);
         }
 
-        //Compute vertex normals (normal Averaging)
+        //Compute vertex normals (normal Averaging)(per vertex smooth shading)
         DirectX::XMVECTOR normalSum = DirectX::XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);
         DirectX::XMVECTOR tangentSum = DirectX::XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);
         int facesUsing = 0;

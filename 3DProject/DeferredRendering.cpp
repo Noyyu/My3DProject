@@ -89,7 +89,7 @@ bool Deferred::instalize(ID3D11Device* device, int textureWidth, int textureHeig
 	//-------- Set up DEPTH STENCIL VIEW DESCRIPTION ---------//
 	D3D11_DEPTH_STENCIL_VIEW_DESC depthStencilViewDesc;
 	ZeroMemory(&depthStencilViewDesc, sizeof(depthStencilViewDesc));
-	depthStencilViewDesc.Format = DXGI_FORMAT_D32_FLOAT;//kolla upp detta
+	depthStencilViewDesc.Format = DXGI_FORMAT_D32_FLOAT; // A single-component, 32-bit floating-point format that supports 32 bits for depth.
 	depthStencilViewDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
 	depthStencilViewDesc.Texture2D.MipSlice = 0;
 
@@ -107,7 +107,6 @@ bool Deferred::instalize(ID3D11Device* device, int textureWidth, int textureHeig
 	viewport.TopLeftX = 0.0f;
 	viewport.TopLeftY = 0.0f;
 
-	//device->Release();
 	return true;
 }
 

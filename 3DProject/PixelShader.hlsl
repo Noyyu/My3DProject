@@ -58,7 +58,7 @@ float4 DoNormalMapping(PixelShaderInput input)
     // Transform normal from local tangent space to world space.
     float3 normalWS = mul(normalTS, TBN);
     
-    return normalize(float4(normalWS, 0.0f)); //normalWS is - here cuz it's mirror otherwise? (but this fucks upp the square)
+    return normalize(float4(normalWS, 0.0f));
 }
 
 PixelShaderOutput main(PixelShaderInput input)
@@ -71,9 +71,7 @@ PixelShaderOutput main(PixelShaderInput input)
     
     output.DiffuseAlbedo = float4(1.0, 0.0, 1.0, 1.0); //Saker utan textur blir lila
     
-    //output.DiffuseAlbedo = diffuseTexture.Sample(testSampler, input.textureCoordinates);
-    
-    if (matrixes.hasTexture) //Dessa verkar inte funka just nu, ta dem sen.
+    if (matrixes.hasTexture)
     {
         output.DiffuseAlbedo = diffuseTexture.Sample(testSampler, input.textureCoordinates);
     }

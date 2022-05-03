@@ -37,7 +37,7 @@ public:
 	bool instalize(ID3D11Device* device, int textureWidth, int textureHight, float screenDepth, float screenNear);
 	void setRenderTargets(ID3D11DeviceContext* deviceContext);
 	void clearRenderTargets(ID3D11DeviceContext* deviceContex);
-	ID3D11ShaderResourceView* getShaderResourceView(int index);
+	ID3D11ShaderResourceView* getShaderResourceView(int index); //Används inte
 	void setShaderResourceView(ID3D11DeviceContext* deviceContext, ID3D11ShaderResourceView* shadowResourceView);
 	void unbindShaderResourceView(ID3D11DeviceContext* deviceContext);
 	void setLightPassRenderTarget(ID3D11RenderTargetView* renderTargetView, ID3D11DeviceContext* deviceContext);

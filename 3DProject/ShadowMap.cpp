@@ -36,21 +36,18 @@ void ShadowMap::SetProjectionMatrix(Light* light, ID3D11DeviceContext* deviceCon
 	float nearZ = 0.10f, farZ = 100.0f;
 	float viewWidth = 30.0f, viewHeight = 20.0f;
 
-	//this->lightProjectionMatrix = DirectX::XMMatrixTranspose(DirectX::XMMatrixOrthographicOffCenterLH(-viewWidth / zoom, viewWidth / zoom, -viewHeight / zoom, viewHeight / zoom, nearZ, farZ));
 	this->lightProjectionMatrix = DirectX::XMMatrixOrthographicOffCenterLH(-viewWidth/zoom, viewWidth/zoom, -viewHeight/zoom, viewHeight/zoom, nearZ, farZ);
-	//this->lightProjectionMatrix = DirectX::XMMatrixPerspectiveFovLH(DirectX::XM_PI * 0.45, this->textureWidth / this->textureHeight, 0.001f, 200.0f);
 
 
 	DirectX::XMVECTOR position = { light->position.x, light->position.y, light->position.z, 1.0f };
 
 	sm::Vector4 lightDirection = light->direction;
 	sm::Vector4 lightPosition  = light->position;
-	//sm::Vector4 target = light->direction;
 	sm::Vector4 target = lightPosition + lightDirection;
 
 	// Set view matrix
 	this->lightViewMatrix = DirectX::XMMatrixLookAtLH(position, target, { 0.0f, 1.0f, 0.0f });
-	//this->lightViewMatrix = DirectX::XMMatrixTranspose(this->lightViewMatrix);
+
 
 	//Set light world view projection matrix;
 	DirectX::XMStoreFloat4x4(&this->shadowConstantBufferStruct.LightViewProjectionMatrix, (this->lightViewMatrix * this->lightProjectionMatrix));

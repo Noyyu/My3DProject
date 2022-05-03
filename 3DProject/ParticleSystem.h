@@ -44,7 +44,4 @@ private:
 	void LoadShader(ID3D11Device* device);
 	void LoadShaderData(const std::string& filename, std::string& shaderByteCode);
 
-	//Temp
-	void shutDown();
-	
 };

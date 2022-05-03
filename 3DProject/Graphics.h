@@ -8,7 +8,7 @@ public:
 
 	//All the tihngs needed
 	
-	ComPtr <ID3D11RasterizerState> rasStateNoCulling; // Back face culling with geomatry shader
+	ComPtr < ID3D11RasterizerState> rasStateNoCulling; // Back face culling with geomatry shader
 	ComPtr < ID3D11Device> pDevice;
 	ComPtr < IDXGISwapChain> pSwapChain;
 	ComPtr < ID3D11DeviceContext> immediateContext;

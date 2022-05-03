@@ -6,8 +6,6 @@ ParticleSystem::ParticleSystem()
 
 ParticleSystem::~ParticleSystem()
 {
-	//this->vertexParticleConstantBuffer->Release();
-	//this->vertexParticleConstantBuffer = 0;
 }
 
 void ParticleSystem::InitializeParticles(ID3D11Device* device, Particle particleList[], DirectX::XMFLOAT4 position)
@@ -130,13 +128,14 @@ void ParticleSystem::particlePass(ID3D11DeviceContext* deviceContext, Camera* wa
 
 	deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_POINTLIST);
 
-
 	particlesPerFrameMatrixes.viewMatrix = matrixFunctions.setWorld(DirectX::XMMatrixTranspose(walkingCamera->getCameraView()));
 	particlesPerFrameMatrixes.projectionMatrix = matrixFunctions.setWVP((DirectX::XMMatrixTranspose(walkingCamera->getCameraProjection())));
+	particlesPerFrameMatrixes.cameraPosition = DirectX::XMFLOAT4(DirectX::XMVectorGetX(walkingCamera->getCameraPos()), DirectX::XMVectorGetY(walkingCamera->getCameraPos()), DirectX::XMVectorGetZ(walkingCamera->getCameraPos()), 1.f);
+
 	deviceContext->UpdateSubresource(vertexParticleConstantBuffer.Get(), 0, NULL, &particlesPerFrameMatrixes, 0, 0);
 
 	deviceContext->GSSetConstantBuffers(0, 1, vertexParticleConstantBuffer.GetAddressOf());
-	deviceContext->IASetVertexBuffers(0, 1, dummyParticleBuffer.GetAddressOf(),&stride,&offset);
+	deviceContext->IASetVertexBuffers(0, 1, dummyParticleBuffer.GetAddressOf(),&stride,&offset); //Is not needed
 
 
 	deviceContext->VSSetShader(particleVertexShader.Get(), nullptr, 0);
@@ -145,12 +144,19 @@ void ParticleSystem::particlePass(ID3D11DeviceContext* deviceContext, Camera* wa
 	deviceContext->PSSetShader(particlePixelShader.Get(), nullptr, 0);
 
 
+	//1: Koppla en unordered acces view for read and write acces.
+	//2: Räkna ut hur många gånger compute shadern behöver köras.
+	//3: Kör compute shadern.
+	//4: Unbind unordered acces to compute shader. 
 	deviceContext->CSSetUnorderedAccessViews(0, 1, particleUAV.GetAddressOf(), nullptr);
-	const int groupCount = static_cast<int>(ceil(MAX_PARTICLES / 768.f));
+	const int groupCount = static_cast<int>(ceil(MAX_PARTICLES / 768.f)); //Hur många grupper som körs
 	deviceContext->Dispatch(groupCount, 1, 1); //Gör dina beräkningar, Compute shader!
 	deviceContext->CSSetUnorderedAccessViews(0, 1, &nullUAV, nullptr);
 
-	deviceContext->VSSetShaderResources(0, 1, particleSRV.GetAddressOf()); //Actual vertex buffer som håller alla vertiser
+
+	//1: Bind the buffer to the vertex shader.
+	//2: Draw.
+	deviceContext->VSSetShaderResources(0, 1, particleSRV.GetAddressOf());
 	deviceContext->DrawInstanced(1, MAX_PARTICLES, 0, 0);
 
 	//Kill stuff
@@ -208,12 +214,6 @@ void ParticleSystem::LoadShaderData(const std::string& filename, std::string& sh
 	shaderData.assign((std::istreambuf_iterator<char>(reader)), std::istreambuf_iterator<char>());
 	shaderByteCode = shaderData;
 	reader.close();
-}
-
-void ParticleSystem::shutDown()
-{
-	//this->vertexParticleConstantBuffer->Release();
-	//this->vertexParticleConstantBuffer = 0;
 }
 
 

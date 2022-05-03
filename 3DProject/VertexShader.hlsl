@@ -54,12 +54,12 @@ VertexShaderOutput main(VertexShaderInput input)
     
     if (matrixes.animated)
     {
-        output.textureCoordinates = float2(input.textureCoordinates.x, input.textureCoordinates.y +(matrixes.time * speed)); //Moving stuff. 
+        output.textureCoordinates = float2(input.textureCoordinates.x, input.textureCoordinates.y + (matrixes.time * speed)); //Moving stuff. 
 
     }
     else
     {
-        output.textureCoordinates = float2(input.textureCoordinates.x, input.textureCoordinates.y); //Moving stuff. 
+        output.textureCoordinates = float2(input.textureCoordinates.x, input.textureCoordinates.y); // Dont move stuff
     }
 
     output.color = input.color;

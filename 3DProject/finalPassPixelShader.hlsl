@@ -2,7 +2,8 @@
 Texture2D normalTexture : register(t0);
 Texture2D positionTexture : register(t1);
 Texture2D diffuseTexture : register(t2);
-Texture2D depthTexture : register(t3); //For shadow mapping //Denna funkar inte just nu. 
+Texture2D depthTexture : register(t3);
+//Both are point samplers
 SamplerState samplerThing : register(s0);
 SamplerState shadowSampler : register(s1);
 
@@ -105,26 +106,36 @@ float4 main(in PSInput input) : sv_Target ////Skriver SV_OutputControlPointID ti
         specular = (lightColor * specularFactor * lightSpecularPower) * attenuation * lightIntensity;
     }
     
-    //// Shadow calculations
+    // ---------------------
+    // Shadow calculations
+    // ---------------------
     
     float4 lightViewPosition = mul(float4(position, 1.0f), lightViewProjectionMatrix);
-    lightViewPosition.xy /= lightViewPosition.w; //ndc?
-    float2 shadowMapTexel = float2(0.5f * lightViewPosition.x + 0.5f, -0.5f * lightViewPosition.y + 0.5f);
-    float depth = lightViewPosition.z / lightViewPosition.w;
-    float bias = 0.03f;
+    //lightViewPosition.xy /= lightViewPosition.w; //ndc (normalized device coordinate)(This isn't needed for ortographic projection cuz the coordinates are already in NDC space) (leaving it it means deviding by 1)
+    float2 shadowMapTexel = float2(0.5f * lightViewPosition.x + 0.5f, -0.5f * lightViewPosition.y + 0.5f);  //(Transform from NDC space to texture space by doing: u = 0.5x + 0.5  v = -0.5y + 0.5)
+    float depth = lightViewPosition.z;; // / lightViewPosition.w; (This isn't needed for ortographic projection)
+    float bias = 0.03f; //Simple bias for simple scene without slopes. 
     
     float dx = 1.0f / 640; // size of shadow map
     float dy = 1.0f / 640; 
     
+    //Sample shadow map to get nearest depth to light. 
+    //generates either 0 or 1. 
     float s0 = (depthTexture.Sample(shadowSampler, shadowMapTexel + float2(0.0f, 0.0f)).r + bias < depth) ? 0.0f : 1.0f;
     float s1 = (depthTexture.Sample(shadowSampler, shadowMapTexel + float2(dx, 0.0f)).r + bias < depth) ? 0.0f : 1.0f;
     float s2 = (depthTexture.Sample(shadowSampler, shadowMapTexel + float2(0.0f, dy)).r + bias < depth) ? 0.0f : 1.0f;
     float s3 = (depthTexture.Sample(shadowSampler, shadowMapTexel + float2(dx, dy)).r + bias < depth) ? 0.0f : 1.0f;
     
+    //Transform to texel space. 
     float2 texelPos = float2(shadowMapTexel.x * dx, shadowMapTexel.y * dy);
     
+    //Determine the interpolation amounts. 
     float2 lerps = frac(texelPos);
+    //The HLSL frac function returns the fractional part of a floating-point number (i.e., the mantissa). For example, if
+    //SMAP_SIZE = 1024 and projTex.xy = (0.23, 0.68), then texelPos = (235.52, 696.32) and frac(texelPos) = (0.52, 0.32).
     
+    //intepolate shadow map valuses
+    // https://en.wikipedia.org/wiki/Bilinear_interpolation
     float shadowCoeff = lerp(lerp(s0, s1, lerps.x), lerp(s2, s3, lerps.x), lerps.y);
     
     finalColor += ((diffuse + specular) * albedo) * (shadowCoeff);
